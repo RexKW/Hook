@@ -10,4 +10,5 @@ import GameplayKit
 class InputComponent: GKComponent {
     var isHolding: Bool = false
     var isTapped: Bool = false
+    var isActionValidated: Bool = false
 }
