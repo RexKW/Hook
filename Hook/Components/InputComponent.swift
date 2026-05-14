@@ -8,7 +8,15 @@
 import GameplayKit
 
 class InputComponent: GKComponent {
-    var isHolding: Bool = false
-    var isTapped: Bool = false
-    var isActionValidated: Bool = false
+    var isHolding = false
+    var isTapped = false
+    
+    func handleTouchBegan() {
+        isHolding = true
+        isTapped = true
+    }
+    
+    func handleTouchEnded() {
+        isHolding = false
+    }
 }
