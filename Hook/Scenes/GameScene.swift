@@ -10,17 +10,38 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene {
-    var hookEntity: HookEntity?
-    let movementSystem = MovementSystem(componentClass: MovementComponent.self)
-    let cameraSystem = CameraSystem(componentClass: CameraComponent.self)
+    ///Entities
+    private var entities = [GKEntity]()
+    private var hookEntity: HookEntity?
+    private var wheelEntity: GKEntity!
     
+    
+    ///Systems
+    let movementSystem = GKComponentSystem(componentClass: MovementSystem.self)
+    var cameraSystem = GKComponentSystem(componentClass: CameraSystem.self)
+    private var reelingSystem = GKComponentSystem(componentClass: ReelingSystem.self)
+    private var reelingVisualSystem = GKComponentSystem(componentClass: ReelingVisualSystem.self)
+    
+    
+    ///Nodes
     private var characterNode: SKSpriteNode!
     private var hookNode: SKSpriteNode!
     private var lineNode: SKSpriteNode!
     
+    
+    
+    ///Variables
     var rodTipPosition: CGPoint {
         return CGPoint(x: characterNode.position.x + 215, y: characterNode.position.y + 20)
     }
+    var success: Bool = false
+    var lastUpdateTime: TimeInterval = 0
+    var possibleClouds = ["Cloud-1","Cloud-2","Cloud-3"]
+    var gameTimer:Timer!
+    var initialClouds:Bool = true
+    
+    
+    
     
     override func didMove(to view: SKView) {
     
@@ -78,7 +99,6 @@ class GameScene: SKScene {
         hookEntity?.component(ofType: InputComponent.self)?.handleTouchEnded()
     }
     
-    private var lastUpdateTime: TimeInterval = 0
     
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
@@ -91,7 +111,7 @@ class GameScene: SKScene {
         if state == .idle {
             hookNode.position = rodTipPosition
         } else {
-            movementSystem.update(deltaTime: dt, rodTip: rodTipPosition)
+            movementSystem.update(deltaTime: dt)
         }
 
         entity.stateMachine?.update(deltaTime: dt)

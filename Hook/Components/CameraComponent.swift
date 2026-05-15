@@ -9,16 +9,17 @@ import GameplayKit
 import SpriteKit
 
 class CameraComponent: GKComponent {
-   
     let cameraNode: SKCameraNode
-    
-    init(camera: SKCameraNode) {
-        self.cameraNode = camera
-        super.init()
-    }
-    
-    required init?(coder: NSCoder) {
-        self.cameraNode = SKCameraNode()
-        super.init()
-    }
+        var target: SKNode?
+        var lerpFactor: CGFloat = 0.1
+
+        init(camera: SKCameraNode) {
+            self.cameraNode = camera
+            super.init()
+        }
+        
+        required init?(coder: NSCoder) {
+            self.cameraNode = SKCameraNode()
+            super.init()
+        }
 }

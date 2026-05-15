@@ -8,20 +8,17 @@
 import GameplayKit
 import SpriteKit
 
-class MovementSystem: GKComponentSystem<MovementComponent> {
+class MovementSystem: GKComponent {
     
     func update(deltaTime seconds: TimeInterval, rodTip: CGPoint) {
-        
-        for component in components {
-            
             // node from GKSKNodeComponent
-            guard let entity = component.entity,
-                  let node = entity.component(ofType: GKSKNodeComponent.self)?.node,
-                  let state = entity.component(ofType: StateComponent.self),
-                  let input = entity.component(ofType: InputComponent.self) else { continue }
+            guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
+                  let move = entity?.component(ofType: MovementComponent.self),
+                  let state = entity?.component(ofType: StateComponent.self),
+                  let input = entity?.component(ofType: InputComponent.self) else { return }
             
             let limit = state.boatTier.rawValue
-            let move = component
+
             
             let stateMachine = (entity as? HookEntity)?.stateMachine
 
@@ -51,6 +48,6 @@ class MovementSystem: GKComponentSystem<MovementComponent> {
                     stateMachine?.enter(IdleState.self)
                 }
             }
-        }
+        
     }
 }
