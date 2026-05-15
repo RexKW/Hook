@@ -14,6 +14,7 @@ class GameScene: SKScene {
     private var entities = [GKEntity]()
     private var hookEntity: HookEntity?
     private var wheelEntity: GKEntity!
+    private let mainCamera = SKCameraNode()
     
     
     ///Systems
@@ -40,12 +41,13 @@ class GameScene: SKScene {
     var gameTimer:Timer!
     
     var initialClouds:Bool = true
+    private var elapsedTime = 0.0
     
     override func didMove(to view: SKView) {
     
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
         hookNode = childNode(withName: "Hook") as? SKSpriteNode
-        lineNode = childNode(withName: "Joran") as? SKSpriteNode
+        lineNode = childNode(withName: "Line") as? SKSpriteNode
         
         lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
         
@@ -56,21 +58,15 @@ class GameScene: SKScene {
         
         [characterNode, hookNode, lineNode].forEach { $0?.texture?.filteringMode = .nearest }
         
-        guard let sceneCamera = self.camera else {
-            print("❌ Peringatan: Kamera belum diatur di .sks!")
-            return
-        }
+        setupCamera()
         
-        let hook = HookEntity(node: hookNode, camera: sceneCamera)
+        let hook = HookEntity(node: hookNode, camera: self.camera!)
         hookEntity = hook
-        
-        if let moveComponent = hook.component(ofType: MovementComponent.self) {
-            movementSystem.addComponent(moveComponent)
-        }
-        
-        if let cameraComponent = hook.component(ofType: CameraComponent.self) {
-            cameraSystem.addComponent(cameraComponent)
-        }
+    }
+    
+    private func setupCamera() {
+        addChild(mainCamera)
+        self.camera = mainCamera
     }
     
     
@@ -91,6 +87,45 @@ class GameScene: SKScene {
                 hookEntity?.stateMachine?.enter(CastingState.self)
             }
         }
+        guard let entity = hookEntity else { return }
+        let state = entity.component(ofType: StateComponent.self)?.currentState
+        
+        if state == .reeling {
+            guard let logic = wheelEntity.component(ofType: ReelingSystem.self) else { return }
+            guard let variables = wheelEntity.component(ofType: ReelingComponent.self) else { return }
+            
+            // If the game is already over, don't do anything
+            if variables.catchProgress >= 1.0 {
+                print("Fish already caught! Resetting...")
+                variables.catchProgress = 0.0
+                return
+            }
+            
+            success = logic.attemptReel()
+            
+            if success {
+                print("Hit! Progress: \(variables.catchProgress)")
+                logic.randomizeTarget()
+                variables.rotationSpeed += 0.2 // Speed up slightly on success
+                elapsedTime = 0
+                
+                if mainCamera.position.y >= 740.0 {
+                    print("FISH CAUGHT! You win!")
+                    // TODO: Show win screen, trigger animations, etc.
+                    variables.rotationSpeed = 0 // Stop the wheel
+                    mainCamera.removeAllChildren()
+                }
+                
+            } else {
+                print("Miss! Fish pulling away. Progress: \(variables.catchProgress)")
+                
+        
+                
+                if variables.catchProgress <= 0.0 {
+                    print("Fish escaped back to 0 progress...")
+                }
+            }
+        }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -105,6 +140,10 @@ class GameScene: SKScene {
 
         guard let entity = hookEntity else { return }
         let state = entity.component(ofType: StateComponent.self)?.currentState
+        
+        if state == .reeling{
+            setupReeling()
+        }
 
         if state == .idle {
             hookNode.position = rodTipPosition
@@ -135,98 +174,92 @@ class GameScene: SKScene {
         lineNode.zPosition = 10
         hookNode.zPosition = 12
     }
+    
+    @objc func randomAddClouds () {
+        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
+        
+        for _ in 1...randomNumber {
+            addCloud(initialCloud: initialClouds)
+        }
+        initialClouds = false
+            
+
+        
+        
+    }
+    
+    @objc func addCloud (initialCloud: Bool) {
+        possibleClouds = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: possibleClouds) as! [String]
+        
+        let cloud = SKSpriteNode(imageNamed: possibleClouds[0])
+        cloud.zPosition = 1
+        
+        let rightEdge = (self.frame.size.width / 2) + cloud.size.width
+            let leftEdge = -(self.frame.size.width / 2) - cloud.size.width
+        
+        let randomCloudYPosition = GKRandomDistribution(lowestValue: 720, highestValue: 1920)
+        let randomCloudDirection = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+        
+        
+        let positionY = CGFloat(randomCloudYPosition.nextInt())
+        
+        if initialCloud {
+            let randomCloudXPosition = GKRandomDistribution(lowestValue: -320, highestValue: 320)
+            let positionX = CGFloat(randomCloudXPosition.nextInt())
+            cloud.position = CGPoint(x: positionX, y: positionY)
+        }else{
+            if randomCloudDirection {
+                    cloud.position = CGPoint(x: rightEdge, y: positionY)
+                } else {
+                    cloud.position = CGPoint(x: leftEdge, y: positionY)
+                }
+        }
+        
+        
+        
+        
+        self.addChild(cloud)
+        
+        let animationDuration:TimeInterval = 60
+        
+        var actionArray = [SKAction]()
+        
+        
+        
+        if randomCloudDirection {
+                actionArray.append(SKAction.move(to: CGPoint(x: leftEdge, y: positionY), duration: animationDuration))
+            } else {
+                actionArray.append(SKAction.move(to: CGPoint(x: rightEdge, y: positionY), duration: animationDuration))
+            }
+        
+        actionArray.append(SKAction.removeFromParent())
+        
+        cloud.run(SKAction.sequence(actionArray))
+        
+    
+    }
+
+    func setupReeling(){
+        if let node = childNode(withName: "//Wheel") as? SKSpriteNode {
+                
+                // 2. Create the Entity
+                self.wheelEntity = WheelEntity(node: node)
+                self.entities.append(wheelEntity) // Keep it in memory
+                
+                // 3. Register node with  systems
+                reelingSystem.addComponent(foundIn: wheelEntity)
+                reelingVisualSystem.addComponent(foundIn: wheelEntity)
+            
+                
+                
+                // 4. Attach custom drawn shapes to the SKS node
+                if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
+                    // This adds all the circles and bars drew to the anchor point
+                    visualComponent.rootNode.position = CGPoint(x: -100.0, y: 0.0)
+                    mainCamera.addChild(visualComponent.rootNode)
+                }
+            
+                
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//import SpriteKit
-//import GameplayKit
-//
-//class GameScene: SKScene {
-//    
-//    private var label : SKLabelNode?
-//    private var spinnyNode : SKShapeNode?
-//    
-//    override func didMove(to view: SKView) {
-//        
-//        // Get label node from scene and store it for use later
-//        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-//        if let label = self.label {
-//            label.alpha = 0.0
-//            label.run(SKAction.fadeIn(withDuration: 2.0))
-//        }
-//        
-//        // Create shape node to use during mouse interaction
-//        let w = (self.size.width + self.size.height) * 0.05
-//        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
-//        
-//        if let spinnyNode = self.spinnyNode {
-//            spinnyNode.lineWidth = 2.5
-//            
-//            spinnyNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-//            spinnyNode.run(SKAction.sequence([SKAction.wait(forDuration: 0.5),
-//                                              SKAction.fadeOut(withDuration: 0.5),
-//                                              SKAction.removeFromParent()]))
-//        }
-//    }
-//    
-//    
-//    func touchDown(atPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.green
-//            self.addChild(n)
-//        }
-//    }
-//    
-//    func touchMoved(toPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.blue
-//            self.addChild(n)
-//        }
-//    }
-//    
-//    func touchUp(atPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.red
-//            self.addChild(n)
-//        }
-//    }
-//    
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        if let label = self.label {
-//            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-//        }
-//        
-//        for t in touches { self.touchDown(atPoint: t.location(in: self)) }
-//    }
-//    
-//    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        for t in touches { self.touchMoved(toPoint: t.location(in: self)) }
-//    }
-//    
-//    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-//    }
-//    
-//    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-//    }
-//    
-//    
-//    override func update(_ currentTime: TimeInterval) {
-//        // Called before each frame is rendered
-//    }
-//}

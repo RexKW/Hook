@@ -48,7 +48,7 @@ class FishingScene: SKScene {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             guard let logic = wheelEntity.component(ofType: ReelingSystem.self) else { return }
-        guard let variables = wheelEntity.component(ofType: ReelingComponent.self) else { return }
+            guard let variables = wheelEntity.component(ofType: ReelingComponent.self) else { return }
             
             // If the game is already over, don't do anything
             if variables.catchProgress >= 1.0 {

@@ -19,6 +19,8 @@ class HookEntity: GKEntity {
         addComponent(StateComponent())
         addComponent(InputComponent())
         addComponent(MovementComponent())
+        addComponent(MovementSystem())
+        addComponent(CameraSystem())
         addComponent(CameraComponent(camera: camera))
         
         stateMachine = GKStateMachine(states: [

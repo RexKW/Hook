@@ -10,7 +10,7 @@ import SpriteKit
 
 class MovementSystem: GKComponent {
     
-    func update(deltaTime seconds: TimeInterval, rodTip: CGPoint) {
+    func update(deltaTime: TimeInterval, rodTip: CGPoint) {
             // node from GKSKNodeComponent
             guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
                   let move = entity?.component(ofType: MovementComponent.self),
@@ -25,7 +25,7 @@ class MovementSystem: GKComponent {
             if state.currentState == .waiting {
                 
                 if input.isHolding && node.position.y > limit {
-                    node.position.y -= (move.dropSpeed * CGFloat(seconds))
+                    node.position.y -= (move.dropSpeed * CGFloat(deltaTime))
                 }
                 
                 if node.position.y < limit {
@@ -38,7 +38,7 @@ class MovementSystem: GKComponent {
                 
             } else if state.currentState == .reeling {
 
-                node.position.y += (move.reelSpeed * CGFloat(seconds))
+                node.position.y += (move.reelSpeed * CGFloat(deltaTime))
                 
                 let diffX = rodTip.x - node.position.x
                 node.position.x += diffX * 0.1
