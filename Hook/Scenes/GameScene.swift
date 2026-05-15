@@ -38,10 +38,8 @@ class GameScene: SKScene {
     var lastUpdateTime: TimeInterval = 0
     var possibleClouds = ["Cloud-1","Cloud-2","Cloud-3"]
     var gameTimer:Timer!
+    
     var initialClouds:Bool = true
-    
-    
-    
     
     override func didMove(to view: SKView) {
     
