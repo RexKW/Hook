@@ -19,9 +19,10 @@ class ReelingVisualSystem: GKComponent {
               let logic = entity?.component(ofType: ReelingComponent.self)
         else { return }
         
+        visuals.setupTargetZoneIfNeeded(width: logic.targetWidth)
         // Update wheel rotation
         visuals.indicatorNode.zRotation = logic.currentAngle
-        visuals.drawTargetZone(startAngle: logic.targetStartAngle, width: logic.targetWidth)
+        visuals.updateTargetZoneRotation(startAngle: logic.targetStartAngle)
         
     }
 }

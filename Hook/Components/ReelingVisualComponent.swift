@@ -36,6 +36,7 @@ class ReelingVisualComponent: GKComponent {
         indicatorNode.strokeColor = .red
         indicatorNode.lineWidth = 4
         rootNode.addChild(indicatorNode)
+        rootNode.zPosition = 10
         
 //        // 3. Draw Progress Bar Background (Positioned below the wheel)
 //        progressBarBackground = SKShapeNode(rectOf: CGSize(width: 200, height: 20), cornerRadius: 5)
@@ -58,18 +59,23 @@ class ReelingVisualComponent: GKComponent {
     }
     
     // Helper function for the system to call
-        func drawTargetZone(startAngle: CGFloat, width: CGFloat) {
-            targetZoneNode?.removeFromParent()
-            
-            let path = CGMutablePath()
-            path.addArc(center: .zero, radius: radius, startAngle: startAngle, endAngle: startAngle + width, clockwise: false)
-            
-            targetZoneNode = SKShapeNode(path: path)
-            targetZoneNode?.strokeColor = .green
-            targetZoneNode?.lineWidth = 8
-            
-            if let targetNode = targetZoneNode {
-                rootNode.addChild(targetNode)
-            }
+    
+    func setupTargetZoneIfNeeded(width: CGFloat){
+        // If the node already exists, we don't need to recreate it.
+            guard targetZoneNode == nil else { return }
+                
+                let path = CGMutablePath()
+                // Draw the arc starting from 0 up to the target width
+                path.addArc(center: .zero, radius: radius, startAngle: 0, endAngle: width, clockwise: false)
+                
+                let node = SKShapeNode(path: path)
+                node.strokeColor = .green
+                node.lineWidth = 8
+                
+                rootNode.addChild(node)
+                targetZoneNode = node
+    }
+    func updateTargetZoneRotation(startAngle: CGFloat) {
+            targetZoneNode?.zRotation = startAngle
         }
 }

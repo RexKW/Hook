@@ -16,6 +16,7 @@ class FishingScene: SKScene {
     private let mainCamera = SKCameraNode()
     
     private var elapsedTime = 0.0
+
     
     var cameraSystem = GKComponentSystem(componentClass: CameraSystem.self)
     private var reelingSystem = GKComponentSystem(componentClass: ReelingSystem.self)
@@ -24,15 +25,24 @@ class FishingScene: SKScene {
     var success: Bool = false
     
     var lastUpdateTime: TimeInterval = 0
+    
+    var possibleClouds = ["Cloud-1","Cloud-2","Cloud-3"]
+    
+    var gameTimer:Timer!
+    
+    var initialClouds:Bool = true
 
     override func didMove(to view: SKView) {
-            setupReeling()
-            setupCamera()
+        setupReeling()
+        setupCamera()
+//        randomAddClouds()
+//        gameTimer = Timer.scheduledTimer(timeInterval: 15.0, target: self, selector: #selector(randomAddClouds), userInfo: nil, repeats: true)
         }
     
     private func setupCamera() {
         addChild(mainCamera)
-        mainCamera.position = CGPoint(x: 0, y: -320)
+        mainCamera.position = CGPoint(x: 0, y: -210) //game
+//        mainCamera.position = CGPoint(x: 0, y: 960) //sky
         self.camera = mainCamera
     }
     
@@ -59,6 +69,7 @@ class FishingScene: SKScene {
                     print("FISH CAUGHT! You win!")
                     // TODO: Show win screen, trigger animations, etc.
                     variables.rotationSpeed = 0 // Stop the wheel
+                    mainCamera.removeAllChildren()
                 }
                 
             } else {
@@ -72,6 +83,69 @@ class FishingScene: SKScene {
             }
         }
     
+    @objc func randomAddClouds () {
+        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
+        
+        for _ in 1...randomNumber {
+            addCloud(initialCloud: initialClouds)
+        }
+        initialClouds = false
+            
+
+        
+        
+    }
+    
+    @objc func addCloud (initialCloud: Bool) {
+        possibleClouds = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: possibleClouds) as! [String]
+        
+        let cloud = SKSpriteNode(imageNamed: possibleClouds[0])
+        cloud.zPosition = 1
+        
+        let rightEdge = (self.frame.size.width / 2) + cloud.size.width
+            let leftEdge = -(self.frame.size.width / 2) - cloud.size.width
+        
+        let randomCloudYPosition = GKRandomDistribution(lowestValue: 720, highestValue: 1920)
+        let randomCloudDirection = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+        
+        
+        let positionY = CGFloat(randomCloudYPosition.nextInt())
+        
+        if initialCloud {
+            let randomCloudXPosition = GKRandomDistribution(lowestValue: -320, highestValue: 320)
+            let positionX = CGFloat(randomCloudXPosition.nextInt())
+            cloud.position = CGPoint(x: positionX, y: positionY)
+        }else{
+            if randomCloudDirection {
+                    cloud.position = CGPoint(x: rightEdge, y: positionY)
+                } else {
+                    cloud.position = CGPoint(x: leftEdge, y: positionY)
+                }
+        }
+        
+        
+        
+        
+        self.addChild(cloud)
+        
+        let animationDuration:TimeInterval = 60
+        
+        var actionArray = [SKAction]()
+        
+        
+        
+        if randomCloudDirection {
+                actionArray.append(SKAction.move(to: CGPoint(x: leftEdge, y: positionY), duration: animationDuration))
+            } else {
+                actionArray.append(SKAction.move(to: CGPoint(x: rightEdge, y: positionY), duration: animationDuration))
+            }
+        
+        actionArray.append(SKAction.removeFromParent())
+        
+        cloud.run(SKAction.sequence(actionArray))
+        
+    
+    }
 
     func setupReeling(){
         if let node = childNode(withName: "//Wheel") as? SKSpriteNode {
