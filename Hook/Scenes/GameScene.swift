@@ -5,7 +5,6 @@
 //  Created by Rex Kenny Wirasantoso on 11/05/26.
 //
 
-
 import SpriteKit
 import GameplayKit
 
@@ -19,14 +18,14 @@ class GameScene: SKScene {
     private var lineNode: SKSpriteNode!
     
     var rodTipPosition: CGPoint {
-        return CGPoint(x: characterNode.position.x + 215, y: characterNode.position.y + 20)
+        return CGPoint(x: characterNode.position.x + 207, y: characterNode.position.y + 95)
     }
     
     override func didMove(to view: SKView) {
     
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
         hookNode = childNode(withName: "Hook") as? SKSpriteNode
-        lineNode = childNode(withName: "Joran") as? SKSpriteNode
+        lineNode = childNode(withName: "Line") as? SKSpriteNode
         
         lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
         
@@ -102,8 +101,8 @@ class GameScene: SKScene {
         entity.component(ofType: InputComponent.self)?.isTapped = false
     }
     
-    
     func updateLineVisual() {
+    
         let start = rodTipPosition
         let end = hookNode.position
         
@@ -113,12 +112,7 @@ class GameScene: SKScene {
         let textureHeight = lineNode.texture?.size().height ?? 1.0
         
         lineNode.yScale = max(0.01, distance / textureHeight)
-        
-        lineNode.zPosition = 10
-        hookNode.zPosition = 12
     }
-}
-
 
 
 
