@@ -6,15 +6,10 @@
 //
 
 import SwiftUI
-import SpriteKit
 
 struct ContentView: View {
-    let scene: SKScene = SKScene(fileNamed: "GameScene")!
-    
     var body: some View {
-        VStack{
-            SpriteView(scene: scene).ignoresSafeArea()
-        }.padding(0).frame(maxWidth: .infinity, maxHeight: .infinity)
+        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
