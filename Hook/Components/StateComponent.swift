@@ -39,7 +39,7 @@ class StateComponent: GKComponent {
 //
 //// Zone limits according to ship level
 enum BoatTier: CGFloat {
-    case boatLevel1 = -200
+    case boatLevel1 = -5760
     case boatLevel2 = -1000
     case boatLevel3 = -4000
 }

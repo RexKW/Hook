@@ -16,13 +16,16 @@ class HookEntity: GKEntity {
         let nodeComponent = GKSKNodeComponent(node: node)
         addComponent(nodeComponent)
         
+        let cameraComponent = CameraComponent(camera: camera)
+        cameraComponent.target = node
+        
         addComponent(StateComponent())
         addComponent(GameStateSystem())
         addComponent(InputComponent())
         addComponent(MovementComponent())
         addComponent(MovementSystem())
         addComponent(CameraSystem())
-        addComponent(CameraComponent(camera: camera))
+        addComponent(cameraComponent)
         
         stateMachine?.enter(IdleState.self)
     }

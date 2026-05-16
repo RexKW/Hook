@@ -16,6 +16,7 @@ class ReelingState: GKState {
     }
     
     override func didEnter(from previousState: GKState?) {
+        print("entered Reeling State")
         //        entity?.component(ofType: StateComponent.self)?.currentState = .reeling
         //    }
     }

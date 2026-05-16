@@ -29,25 +29,24 @@ class ReelingSystem: GKComponent {
 //    }
 //    
     override func update(deltaTime seconds: TimeInterval) {
-        guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
-              let reelData = entity?.component(ofType: ReelingComponent.self)
-        else { return }
+            guard let reelData = entity?.component(ofType: ReelingComponent.self)
+            else { return }
+            
+            super.update(deltaTime: seconds)
+            reelData.currentAngle += reelData.rotationSpeed * CGFloat(seconds)
+            reelData.currentAngle = reelData.currentAngle.truncatingRemainder(dividingBy: 2 * .pi)
         
-        super.update(deltaTime: seconds)
-        reelData.currentAngle += reelData.rotationSpeed * CGFloat(seconds)
-        reelData.currentAngle = reelData.currentAngle.truncatingRemainder(dividingBy: 2 * .pi)
+        
     }
     
     func randomizeTarget() {
-        guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
-              let reelData = entity?.component(ofType: ReelingComponent.self)
+        guard let reelData = entity?.component(ofType: ReelingComponent.self)
         else { return }
         reelData.targetStartAngle = CGFloat.random(in: 0..<(2 * .pi))
     }
     
     func attemptReel() -> Bool {
-        guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
-              let reelData = entity?.component(ofType: ReelingComponent.self)
+        guard let reelData = entity?.component(ofType: ReelingComponent.self)
         else { return false }
         let targetEndAngle = reelData.targetStartAngle + reelData.targetWidth
         let success: Bool

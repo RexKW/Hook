@@ -21,11 +21,32 @@ class MovementSystem: GKComponent {
 
             
             let stateMachine = (entity as? HookEntity)?.stateMachine
+        
+        if state.stateMachine.currentState is CastingState {
+            
+            if input.isHolding {
+                // 1. Move the hook deeper the longer they hold
+                let dropSpeed: CGFloat = 800.0 // Adjust this to make it drop faster/slower
+                node.position.y -= (dropSpeed * CGFloat(deltaTime))
+                
+                // Optional: Put a hard limit so it doesn't go below the sea floor
+                if node.position.y <= -5760 {
+                    node.position.y = -5760
+                    print("Reached bottom!")
+                    state.stateMachine.enter(WaitingState.self)
+                }
+                
+            } else {
+                // 2. The player let go! Stop dropping and start waiting for a fish.
+                print("✅ Masuk ke Waiting State at depth: \(node.position.y)")
+                state.stateMachine.enter(WaitingState.self)
+            }
+        }
 
-        if state.stateMachine.currentState is WaitingState {
+        if state.stateMachine.currentState is IdleState {
                 
                 if input.isHolding && node.position.y > limit {
-                    print("pulling \(node.position.y)")
+                    print("casting \(node.position.y)")
                     node.position.y -= (move.dropSpeed * CGFloat(deltaTime))
                 }
                 
@@ -39,14 +60,13 @@ class MovementSystem: GKComponent {
                 }
                 
         } else if state.stateMachine.currentState is ReelingState {
-            print("entered reeling state")
 //                node.position.y += (move.reelSpeed * CGFloat(deltaTime))
 //                
 //                let diffX = rodTip.x - node.position.x
 //                node.position.x += diffX * 0.1
                 
-                if node.position.y >= rodTip.y {
-                    node.position = rodTip
+                if node.position.y >= -940 {
+                    node.position.y = -847
                     stateMachine?.enter(IdleState.self)
                 }
             }

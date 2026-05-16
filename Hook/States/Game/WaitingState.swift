@@ -18,5 +18,7 @@ class WaitingState: GKState {
     override func didEnter(from previousState: GKState?) {
 //        entity?.component(ofType: StateComponent.self)?.currentState = .waiting
     }
+    
+    
 }
 

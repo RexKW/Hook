@@ -34,7 +34,7 @@ class GameScene: SKScene {
     
     ///Variables
     var rodTipPosition: CGPoint {
-        return CGPoint(x: characterNode.position.x + 215, y: characterNode.position.y + 20)
+        return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
     }
     var success: Bool = false
     var lastUpdateTime: TimeInterval = 0
@@ -52,6 +52,7 @@ class GameScene: SKScene {
         
         lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
         
+        
         guard characterNode != nil, hookNode != nil, lineNode != nil else {
             print("❌ ERROR: Salah satu Node tidak ditemukan. Cek nama di .sks!")
             return
@@ -64,9 +65,6 @@ class GameScene: SKScene {
         let hook = HookEntity(node: hookNode, camera: self.camera!)
         hookEntity = hook
         
-        if let camComponent = hookEntity?.component(ofType: CameraComponent.self) {
-                    camComponent.target = hookNode
-                }
         
         setupHook()
     }
@@ -104,14 +102,28 @@ class GameScene: SKScene {
         let currentState = stateComp.stateMachine.currentState
                 
         if currentState is IdleState {
+            print("casting")
             stateComp.stateMachine.enter(CastingState.self)
         }
         
-        if currentState is ReelingState {
- 
+        if currentState is WaitingState {
+            if input.isTapped {
+                setupReeling()
+                stateComp.stateMachine.enter(ReelingState.self)
+                
+            }
             
-            guard let logic = wheelEntity.component(ofType: ReelingSystem.self) else { return }
-            guard let variables = wheelEntity.component(ofType: ReelingComponent.self) else { return }
+        }
+        
+        if currentState is ReelingState {
+            guard let wheel = wheelEntity,
+                      let logic = wheel.component(ofType: ReelingSystem.self),
+                      let variables = wheel.component(ofType: ReelingComponent.self) else {
+                    
+                    print("⏳ Waiting for wheelEntity to be created...")
+                    return
+                }
+            
             
             // If the game is already over, don't do anything
             if variables.catchProgress >= 1.0 {
@@ -128,11 +140,12 @@ class GameScene: SKScene {
                 variables.rotationSpeed += 0.2 // Speed up slightly on success
                 elapsedTime = 0
                 
-                if mainCamera.position.y >= 740.0 {
+                if hookNode.position.y >= -940 {
                     print("FISH CAUGHT! You win!")
                     // TODO: Show win screen, trigger animations, etc.
                     variables.rotationSpeed = 0 // Stop the wheel
                     mainCamera.removeAllChildren()
+                    stateComp.stateMachine.enter(IdleState.self)
                 }
                 
             } else {
@@ -156,6 +169,7 @@ class GameScene: SKScene {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
         let dt = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
+        elapsedTime += dt
 
         guard let entity = hookEntity,
             let stateComp = entity.component(ofType: StateComponent.self) else { return }
@@ -173,13 +187,25 @@ class GameScene: SKScene {
                 movement.update(deltaTime: dt, rodTip: rodTipPosition)
             }
         }
+        
+        if(success == true){
+            if(elapsedTime >= 0.5 || mainCamera.position.y >= 740){
+                success = false
+                elapsedTime = 0
+            }else{
+                hookNode.position.y += 5.0
+                
+            }
+            
+        }
 
         stateSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
 
         updateLineVisual()
         reelingSystem.update(deltaTime: dt)
-                reelingVisualSystem.update(deltaTime: dt)
+        reelingVisualSystem.update(deltaTime: dt)
+        movementSystem.update(deltaTime: dt)
 
         entity.component(ofType: InputComponent.self)?.isTapped = false
     }
@@ -265,26 +291,35 @@ class GameScene: SKScene {
     }
 
     func setupReeling(){
-        if let node = childNode(withName: "//Wheel") as? SKSpriteNode {
-                
-                // 2. Create the Entity
-                self.wheelEntity = WheelEntity(node: node)
-                self.entities.append(wheelEntity) // Keep it in memory
-                
-                // 3. Register node with  systems
-                reelingSystem.addComponent(foundIn: wheelEntity)
-                reelingVisualSystem.addComponent(foundIn: wheelEntity)
+        let wheelNode = SKSpriteNode()
+            wheelNode.name = "Wheel"
+        
+        wheelNode.position = CGPoint(x: 0, y: 0)
+            wheelNode.zPosition = 1000
             
-                
-                
-                // 4. Attach custom drawn shapes to the SKS node
-                if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
-                    // This adds all the circles and bars drew to the anchor point
-                    visualComponent.rootNode.position = CGPoint(x: -100.0, y: 0.0)
-                    mainCamera.addChild(visualComponent.rootNode)
-                }
+            // 3. Add it DIRECTLY to the camera
+            mainCamera.addChild(wheelNode)
             
+            // 4. Create the Entity
+            self.wheelEntity = WheelEntity(node: wheelNode)
+            self.entities.append(self.wheelEntity)
+            
+            // 5. Register with your Systems
+        reelingSystem.addComponent(foundIn: self.wheelEntity)
+        reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
+        
+        
+            
+            // 6. Attach your custom drawn shapes
+            if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
+                visualComponent.rootNode.removeFromParent() // Safety cleanup
                 
-        }
+                // Position it relative to the wheelNode
+                visualComponent.rootNode.position = CGPoint(x: -100.0, y: 0.0)
+                visualComponent.rootNode.zPosition = 1 // Just slightly above the base node
+                
+                // Add the visuals directly to the wheelNode (keeps things grouped together neatly!)
+                wheelNode.addChild(visualComponent.rootNode)
+            }
     }
 }
