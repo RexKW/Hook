@@ -20,6 +20,7 @@ class GameScene: SKScene {
     ///Systems
     let movementSystem = GKComponentSystem(componentClass: MovementSystem.self)
     var cameraSystem = GKComponentSystem(componentClass: CameraSystem.self)
+    var stateSystem = GKComponentSystem(componentClass: GameStateSystem.self)
     private var reelingSystem = GKComponentSystem(componentClass: ReelingSystem.self)
     private var reelingVisualSystem = GKComponentSystem(componentClass: ReelingVisualSystem.self)
     
@@ -62,6 +63,23 @@ class GameScene: SKScene {
         
         let hook = HookEntity(node: hookNode, camera: self.camera!)
         hookEntity = hook
+        
+        if let camComponent = hookEntity?.component(ofType: CameraComponent.self) {
+                    camComponent.target = hookNode
+                }
+        
+        setupHook()
+    }
+    
+    func setupHook(){
+        if let node = childNode(withName: "Hook") as? SKSpriteNode {
+                    let entity = HookEntity(node: node, camera: mainCamera)
+                    self.hookEntity = entity
+                    
+                    movementSystem.addComponent(foundIn: entity)
+                    cameraSystem.addComponent(foundIn: entity)
+                    stateSystem.addComponent(foundIn: entity)
+                }
     }
     
     private func setupCamera() {
@@ -73,7 +91,9 @@ class GameScene: SKScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("Hold!")
         
-        guard let input = hookEntity?.component(ofType: InputComponent.self) else {
+        guard let entity = hookEntity,
+            let input = hookEntity?.component(ofType: InputComponent.self),
+            let stateComp = entity.component(ofType: StateComponent.self) else {
             print("❌ Error: InputComponent tidak ditemukan di Entity!")
             return
         }
@@ -81,16 +101,15 @@ class GameScene: SKScene {
         input.handleTouchBegan()
         print("isHolding sekarang: \(input.isHolding)")
         
-        if let state = hookEntity?.component(ofType: StateComponent.self) {
-            print("Current State: \(state.currentState)")
-            if state.currentState == .idle {
-                hookEntity?.stateMachine?.enter(CastingState.self)
-            }
+        let currentState = stateComp.stateMachine.currentState
+                
+        if currentState is IdleState {
+            stateComp.stateMachine.enter(CastingState.self)
         }
-        guard let entity = hookEntity else { return }
-        let state = entity.component(ofType: StateComponent.self)?.currentState
         
-        if state == .reeling {
+        if currentState is ReelingState {
+ 
+            
             guard let logic = wheelEntity.component(ofType: ReelingSystem.self) else { return }
             guard let variables = wheelEntity.component(ofType: ReelingComponent.self) else { return }
             
@@ -138,23 +157,29 @@ class GameScene: SKScene {
         let dt = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
 
-        guard let entity = hookEntity else { return }
-        let state = entity.component(ofType: StateComponent.self)?.currentState
+        guard let entity = hookEntity,
+            let stateComp = entity.component(ofType: StateComponent.self) else { return }
         
-        if state == .reeling{
-            setupReeling()
+        let currentState = stateComp.stateMachine.currentState
+        
+        if currentState is ReelingState && wheelEntity == nil {
+                    setupReeling()
         }
 
-        if state == .idle {
+        if currentState is IdleState {
             hookNode.position = rodTipPosition
         } else {
-            movementSystem.update(deltaTime: dt)
+            if let movement = entity.component(ofType: MovementSystem.self) {
+                movement.update(deltaTime: dt, rodTip: rodTipPosition)
+            }
         }
 
-        entity.stateMachine?.update(deltaTime: dt)
+        stateSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
 
         updateLineVisual()
+        reelingSystem.update(deltaTime: dt)
+                reelingVisualSystem.update(deltaTime: dt)
 
         entity.component(ofType: InputComponent.self)?.isTapped = false
     }

@@ -8,22 +8,22 @@
 import GameplayKit
 
 class CastingState: GKState {
-    weak var entity: HookEntity?
+    unowned let statusComp: StateComponent
     
-    init(entity: HookEntity) {
-        self.entity = entity
+    init(component: StateComponent) {
+        self.statusComp = component
         super.init()
     }
     
     override func didEnter(from previousState: GKState?) {
 
-        guard let entity = entity,
+        guard let entity = statusComp.entity,
               let node = entity.component(ofType: GKSKNodeComponent.self)?.node else {
             print("❌ CastingState: GKSKNodeComponent tidak ketemu")
             return
         }
         
-        entity.component(ofType: StateComponent.self)?.currentState = .casting
+//        entity.component(ofType: StateComponent.self)?.currentState = .casting
         
         node.run(SKAction.moveTo(y: -50, duration: 0.5)) { [weak self] in
             print("✅ Masuk ke Waiting State")

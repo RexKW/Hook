@@ -8,15 +8,15 @@
 import GameplayKit
 
 class IdleState: GKState {
-    weak var entity: HookEntity?
+    unowned let statusComp: StateComponent
     
-    init(entity: HookEntity) {
-        self.entity = entity
-        super.init()
+    init(component: StateComponent) {
+            self.statusComp = component
+            super.init()
     }
     
     override func didEnter(from previousState: GKState?) {
-        entity?.component(ofType: StateComponent.self)?.currentState = .idle
+//        entity?.component(ofType: StateComponent.self)?.currentState = .idle
         print("Hook Ready!")
     }
 }

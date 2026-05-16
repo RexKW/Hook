@@ -22,9 +22,10 @@ class MovementSystem: GKComponent {
             
             let stateMachine = (entity as? HookEntity)?.stateMachine
 
-            if state.currentState == .waiting {
+        if state.stateMachine.currentState is WaitingState {
                 
                 if input.isHolding && node.position.y > limit {
+                    print("pulling \(node.position.y)")
                     node.position.y -= (move.dropSpeed * CGFloat(deltaTime))
                 }
                 
@@ -34,14 +35,15 @@ class MovementSystem: GKComponent {
             
                 if input.isTapped {
                     stateMachine?.enter(ReelingState.self)
+                    
                 }
                 
-            } else if state.currentState == .reeling {
-
-                node.position.y += (move.reelSpeed * CGFloat(deltaTime))
-                
-                let diffX = rodTip.x - node.position.x
-                node.position.x += diffX * 0.1
+        } else if state.stateMachine.currentState is ReelingState {
+            print("entered reeling state")
+//                node.position.y += (move.reelSpeed * CGFloat(deltaTime))
+//                
+//                let diffX = rodTip.x - node.position.x
+//                node.position.x += diffX * 0.1
                 
                 if node.position.y >= rodTip.y {
                     node.position = rodTip

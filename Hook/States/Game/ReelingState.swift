@@ -8,15 +8,16 @@
 import GameplayKit
 
 class ReelingState: GKState {
-    weak var entity: HookEntity?
+    unowned let statusComp: StateComponent
     
-    init(entity: HookEntity) {
-        self.entity = entity
+    init(component: StateComponent) {
+        self.statusComp = component
         super.init()
     }
     
     override func didEnter(from previousState: GKState?) {
-        entity?.component(ofType: StateComponent.self)?.currentState = .reeling
+        //        entity?.component(ofType: StateComponent.self)?.currentState = .reeling
+        //    }
     }
 }
 
