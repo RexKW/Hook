@@ -6,17 +6,14 @@
 //
 
 import GameplayKit
+import SpriteKit
 
-class CameraSystem: GKComponentSystem<CameraComponent> {
-    
+class CameraSystem: GKComponent {
     override func update(deltaTime seconds: TimeInterval) {
-        for component in components {
-           
-            guard let entity = component.entity,
-                  let node = entity.component(ofType: GKSKNodeComponent.self)?.node else { continue }
-            
-            let targetY = node.position.y
-            component.cameraNode.position.y = min(0, targetY)
-        }
+        guard let data = entity?.component(ofType: CameraComponent.self),
+              let target = data.target
+        else { return }
+        
+        data.cameraNode.position.y = target.position.y
     }
 }

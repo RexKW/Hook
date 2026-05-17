@@ -16,17 +16,17 @@ class HookEntity: GKEntity {
         let nodeComponent = GKSKNodeComponent(node: node)
         addComponent(nodeComponent)
         
+        let cameraComponent = CameraComponent(camera: camera)
+        cameraComponent.target = node
+        
         addComponent(StateComponent())
+        addComponent(GameStateSystem())
         addComponent(InputComponent())
         addComponent(MovementComponent())
-        addComponent(CameraComponent(camera: camera))
+        addComponent(MovementSystem())
+        addComponent(CameraSystem())
+        addComponent(cameraComponent)
         
-        stateMachine = GKStateMachine(states: [
-            IdleState(entity: self),
-            CastingState(entity: self),
-            WaitingState(entity: self),
-            ReelingState(entity: self)
-        ])
         stateMachine?.enter(IdleState.self)
     }
     required init?(coder: NSCoder) { fatalError() }

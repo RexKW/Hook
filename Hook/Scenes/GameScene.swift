@@ -9,17 +9,41 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene {
-    var hookEntity: HookEntity?
-    let movementSystem = MovementSystem(componentClass: MovementComponent.self)
-    let cameraSystem = CameraSystem(componentClass: CameraComponent.self)
+    ///Entities
+    private var entities = [GKEntity]()
+    private var hookEntity: HookEntity?
+    private var wheelEntity: GKEntity!
+    private let mainCamera = SKCameraNode()
     
+    
+    ///Systems
+    let movementSystem = GKComponentSystem(componentClass: MovementSystem.self)
+    var cameraSystem = GKComponentSystem(componentClass: CameraSystem.self)
+    var stateSystem = GKComponentSystem(componentClass: GameStateSystem.self)
+    private var reelingSystem = GKComponentSystem(componentClass: ReelingSystem.self)
+    private var reelingVisualSystem = GKComponentSystem(componentClass: ReelingVisualSystem.self)
+    
+    
+    ///Nodes
     private var characterNode: SKSpriteNode!
     private var hookNode: SKSpriteNode!
     private var lineNode: SKSpriteNode!
     
+    
+    
+    ///Variables
     var rodTipPosition: CGPoint {
-        return CGPoint(x: characterNode.position.x + 207, y: characterNode.position.y + 95)
+
+        return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
+
     }
+    var success: Bool = false
+    var lastUpdateTime: TimeInterval = 0
+    var possibleClouds = ["Cloud-1","Cloud-2","Cloud-3"]
+    var gameTimer:Timer!
+    
+    var initialClouds:Bool = true
+    private var elapsedTime = 0.0
     
     override func didMove(to view: SKView) {
     
@@ -29,35 +53,50 @@ class GameScene: SKScene {
         
         lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
         
+        
         guard characterNode != nil, hookNode != nil, lineNode != nil else {
             print("❌ ERROR: Salah satu Node tidak ditemukan. Cek nama di .sks!")
             return
         }
-        
+
+        characterNode.zPosition = 10
+        lineNode.zPosition = 11
+        hookNode.zPosition = 12
+
         [characterNode, hookNode, lineNode].forEach { $0?.texture?.filteringMode = .nearest }
         
-        guard let sceneCamera = self.camera else {
-            print("❌ Peringatan: Kamera belum diatur di .sks!")
-            return
-        }
+        setupCamera()
         
-        let hook = HookEntity(node: hookNode, camera: sceneCamera)
+        let hook = HookEntity(node: hookNode, camera: self.camera!)
         hookEntity = hook
         
-        if let moveComponent = hook.component(ofType: MovementComponent.self) {
-            movementSystem.addComponent(moveComponent)
-        }
         
-        if let cameraComponent = hook.component(ofType: CameraComponent.self) {
-            cameraSystem.addComponent(cameraComponent)
-        }
+        setupHook()
+    }
+    
+    func setupHook(){
+        if let node = childNode(withName: "Hook") as? SKSpriteNode {
+                    let entity = HookEntity(node: node, camera: mainCamera)
+                    self.hookEntity = entity
+                    
+                    movementSystem.addComponent(foundIn: entity)
+                    cameraSystem.addComponent(foundIn: entity)
+                    stateSystem.addComponent(foundIn: entity)
+                }
+    }
+    
+    private func setupCamera() {
+        addChild(mainCamera)
+        self.camera = mainCamera
     }
     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("Hold!")
         
-        guard let input = hookEntity?.component(ofType: InputComponent.self) else {
+        guard let entity = hookEntity,
+            let input = hookEntity?.component(ofType: InputComponent.self),
+            let stateComp = entity.component(ofType: StateComponent.self) else {
             print("❌ Error: InputComponent tidak ditemukan di Entity!")
             return
         }
@@ -65,10 +104,60 @@ class GameScene: SKScene {
         input.handleTouchBegan()
         print("isHolding sekarang: \(input.isHolding)")
         
-        if let state = hookEntity?.component(ofType: StateComponent.self) {
-            print("Current State: \(state.currentState)")
-            if state.currentState == .idle {
-                hookEntity?.stateMachine?.enter(CastingState.self)
+        let currentState = stateComp.stateMachine.currentState
+                
+        if currentState is IdleState {
+            print("casting")
+            stateComp.stateMachine.enter(CastingState.self)
+        }
+        
+        if currentState is WaitingState {
+            if input.isTapped {
+                setupReeling()
+                stateComp.stateMachine.enter(ReelingState.self)
+                
+            }
+            
+        }
+        
+        if currentState is ReelingState {
+            guard let wheel = wheelEntity,
+                      let logic = wheel.component(ofType: ReelingSystem.self),
+                      let variables = wheel.component(ofType: ReelingComponent.self) else {
+                    
+                    print("⏳ Waiting for wheelEntity to be created...")
+                    return
+                }
+            
+            // If the game is already over, don't do anything
+            if variables.catchProgress >= 1.0 {
+                print("Fish already caught! Resetting...")
+                variables.catchProgress = 0.0
+                return
+            }
+            
+            success = logic.attemptReel()
+            
+            if success {
+                print("Hit! Progress: \(variables.catchProgress)")
+                logic.randomizeTarget()
+                variables.rotationSpeed += 0.2 // Speed up slightly on success
+                elapsedTime = 0
+                
+                if hookNode.position.y >= -940 {
+                    print("FISH CAUGHT! You win!")
+                    // TODO: Show win screen, trigger animations, etc.
+                    variables.rotationSpeed = 0 // Stop the wheel
+                    mainCamera.removeAllChildren()
+                    stateComp.stateMachine.enter(IdleState.self)
+                }
+                
+            } else {
+                print("Miss! Fish pulling away. Progress: \(variables.catchProgress)")
+                
+                if variables.catchProgress <= 0.0 {
+                    print("Fish escaped back to 0 progress...")
+                }
             }
         }
     }
@@ -77,26 +166,50 @@ class GameScene: SKScene {
         hookEntity?.component(ofType: InputComponent.self)?.handleTouchEnded()
     }
     
-    private var lastUpdateTime: TimeInterval = 0
     
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
         let dt = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
+        elapsedTime += dt
 
-        guard let entity = hookEntity else { return }
-        let state = entity.component(ofType: StateComponent.self)?.currentState
-
-        if state == .idle {
-            hookNode.position = rodTipPosition
-        } else {
-            movementSystem.update(deltaTime: dt, rodTip: rodTipPosition)
+        guard let entity = hookEntity,
+              
+        let stateComp = entity.component(ofType: StateComponent.self) else { return }
+        
+        let currentState = stateComp.stateMachine.currentState
+        
+        if currentState is ReelingState && wheelEntity == nil {
+                    setupReeling()
         }
 
-        entity.stateMachine?.update(deltaTime: dt)
+        if currentState is IdleState {
+            hookNode.position = CGPoint(x: rodTipPosition.x + 1 , y: rodTipPosition.y - 20)
+            
+        } else {
+            if let movement = entity.component(ofType: MovementSystem.self) {
+                movement.update(deltaTime: dt, rodTip: rodTipPosition)
+            }
+        }
+        
+        if(success == true){
+            if(elapsedTime >= 0.5 || mainCamera.position.y >= 740){
+                success = false
+                elapsedTime = 0
+            }else{
+                hookNode.position.y += 5.0
+                
+            }
+            
+        }
+
+        stateSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
 
         updateLineVisual()
+        reelingSystem.update(deltaTime: dt)
+        reelingVisualSystem.update(deltaTime: dt)
+        movementSystem.update(deltaTime: dt)
 
         entity.component(ofType: InputComponent.self)?.isTapped = false
     }
@@ -108,101 +221,101 @@ class GameScene: SKScene {
         
         lineNode.position = start
         
-        let distance = start.y - end.y
+        let distance = abs(start.y - end.y)
         let textureHeight = lineNode.texture?.size().height ?? 1.0
-        
+            
         lineNode.yScale = max(0.01, distance / textureHeight)
+        lineNode.zRotation = 0
     }
 
+    
+    @objc func randomAddClouds () {
+        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
+        
+        for _ in 1...randomNumber {
+            addCloud(initialCloud: initialClouds)
+        }
+        initialClouds = false
 
+    }
+    
+    @objc func addCloud (initialCloud: Bool) {
+        possibleClouds = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: possibleClouds) as! [String]
+        
+        let cloud = SKSpriteNode(imageNamed: possibleClouds[0])
+        cloud.zPosition = 1
+        
+        let rightEdge = (self.frame.size.width / 2) + cloud.size.width
+            let leftEdge = -(self.frame.size.width / 2) - cloud.size.width
+        
+        let randomCloudYPosition = GKRandomDistribution(lowestValue: 720, highestValue: 1920)
+        let randomCloudDirection = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+        
+        
+        let positionY = CGFloat(randomCloudYPosition.nextInt())
+        
+        if initialCloud {
+            let randomCloudXPosition = GKRandomDistribution(lowestValue: -320, highestValue: 320)
+            let positionX = CGFloat(randomCloudXPosition.nextInt())
+            cloud.position = CGPoint(x: positionX, y: positionY)
+        }else{
+            if randomCloudDirection {
+                    cloud.position = CGPoint(x: rightEdge, y: positionY)
+                } else {
+                    cloud.position = CGPoint(x: leftEdge, y: positionY)
+                }
+        }
+        
+        
+        self.addChild(cloud)
+        
+        let animationDuration:TimeInterval = 60
+        
+        var actionArray = [SKAction]()
+        
+        
+        
+        if randomCloudDirection {
+                actionArray.append(SKAction.move(to: CGPoint(x: leftEdge, y: positionY), duration: animationDuration))
+            } else {
+                actionArray.append(SKAction.move(to: CGPoint(x: rightEdge, y: positionY), duration: animationDuration))
+            }
+        
+        actionArray.append(SKAction.removeFromParent())
+        
+        cloud.run(SKAction.sequence(actionArray))
+        
+    
+    }
 
-
-
-
-
-
-
-
-
-
-//import SpriteKit
-//import GameplayKit
-//
-//class GameScene: SKScene {
-//    
-//    private var label : SKLabelNode?
-//    private var spinnyNode : SKShapeNode?
-//    
-//    override func didMove(to view: SKView) {
-//        
-//        // Get label node from scene and store it for use later
-//        self.label = self.childNode(withName: "//helloLabel") as? SKLabelNode
-//        if let label = self.label {
-//            label.alpha = 0.0
-//            label.run(SKAction.fadeIn(withDuration: 2.0))
-//        }
-//        
-//        // Create shape node to use during mouse interaction
-//        let w = (self.size.width + self.size.height) * 0.05
-//        self.spinnyNode = SKShapeNode.init(rectOf: CGSize.init(width: w, height: w), cornerRadius: w * 0.3)
-//        
-//        if let spinnyNode = self.spinnyNode {
-//            spinnyNode.lineWidth = 2.5
-//            
-//            spinnyNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: CGFloat(Double.pi), duration: 1)))
-//            spinnyNode.run(SKAction.sequence([SKAction.wait(forDuration: 0.5),
-//                                              SKAction.fadeOut(withDuration: 0.5),
-//                                              SKAction.removeFromParent()]))
-//        }
-//    }
-//    
-//    
-//    func touchDown(atPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.green
-//            self.addChild(n)
-//        }
-//    }
-//    
-//    func touchMoved(toPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.blue
-//            self.addChild(n)
-//        }
-//    }
-//    
-//    func touchUp(atPoint pos : CGPoint) {
-//        if let n = self.spinnyNode?.copy() as! SKShapeNode? {
-//            n.position = pos
-//            n.strokeColor = SKColor.red
-//            self.addChild(n)
-//        }
-//    }
-//    
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        if let label = self.label {
-//            label.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-//        }
-//        
-//        for t in touches { self.touchDown(atPoint: t.location(in: self)) }
-//    }
-//    
-//    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        for t in touches { self.touchMoved(toPoint: t.location(in: self)) }
-//    }
-//    
-//    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-//    }
-//    
-//    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
-//    }
-//    
-//    
-//    override func update(_ currentTime: TimeInterval) {
-//        // Called before each frame is rendered
-//    }
-//}
+    func setupReeling(){
+        let wheelNode = SKSpriteNode()
+            wheelNode.name = "Wheel"
+        
+        wheelNode.position = CGPoint(x: 0, y: 0)
+            wheelNode.zPosition = 1000
+            
+            // 3. Add it DIRECTLY to the camera
+            mainCamera.addChild(wheelNode)
+            
+            // 4. Create the Entity
+            self.wheelEntity = WheelEntity(node: wheelNode)
+            self.entities.append(self.wheelEntity)
+            
+            // 5. Register with your Systems
+        reelingSystem.addComponent(foundIn: self.wheelEntity)
+        reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
+            
+            // 6. Attach your custom drawn shapes
+            if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
+                visualComponent.rootNode.removeFromParent() // Safety cleanup
+                
+                // Position it relative to the wheelNode
+                visualComponent.rootNode.position = CGPoint(x: -100.0, y: 0.0)
+                visualComponent.rootNode.zPosition = 1 // Just slightly above the base node
+                
+                // Add the visuals directly to the wheelNode (keeps things grouped together neatly!)
+                wheelNode.addChild(visualComponent.rootNode)
+            }
+    }
+}
