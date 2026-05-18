@@ -13,6 +13,7 @@ class CameraFollowHookSystem {
     private var topOffsetY: CGFloat = 0
     private let centerOffsetY: CGFloat = 0
     private let hookCenteringSpeed: CGFloat = 260
+    let resetToTopDuration: TimeInterval = 0.6
     private weak var attachedFishNode: SKNode?
     
     func attachHook(
@@ -111,7 +112,7 @@ class CameraFollowHookSystem {
         
         hookNode.removeAction(forKey: "resetToTop")
         hookNode.run(
-            SKAction.moveTo(y: topOffsetY, duration: 0.35),
+            SKAction.moveTo(y: topOffsetY, duration: resetToTopDuration),
             withKey: "resetToTop"
         )
     }

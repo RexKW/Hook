@@ -7,12 +7,14 @@
 
 import SpriteKit
 import GameplayKit
+import UIKit
 
 class TestGameScene: SKScene {
     private let sceneCamera = SKCameraNode()
     private var backgroundMusic: SKAudioNode?
     private var splashSound: SKAudioNode?
     private var reelingSound: SKAudioNode?
+    private var fishCaughtSound: SKAudioNode?
     private var isHookCastActive = false
     private var isHoldingScreen = false
     private var isWaitingForFish = false
@@ -22,7 +24,7 @@ class TestGameScene: SKScene {
     private var lastUpdateTime: TimeInterval?
     private let tapDurationLimit: TimeInterval = 0.2
     private let cameraFallSpeed: CGFloat = 320
-    
+    private let heavyImpactFeedBack = UIImpactFeedbackGenerator(style: .heavy)
     
     private let seaTop: CGFloat = 0
     private var layerHeight: CGFloat {
@@ -65,7 +67,7 @@ class TestGameScene: SKScene {
         music.run(SKAction.changeVolume(to: 0, duration: 0))
         addChild(music)
 
-        music.run(SKAction.changeVolume(to: 1, duration: 1.5))
+        music.run(SKAction.changeVolume(to: 0.6, duration: 1.5))
         backgroundMusic = music
     }
     
@@ -92,6 +94,23 @@ class TestGameScene: SKScene {
         addChild(splashSoundEffect)
         
         splashSoundEffect.run(
+            SKAction.sequence([
+                SKAction.play(),
+                SKAction.wait(forDuration: duration),
+                SKAction.removeFromParent()
+            ])
+        )
+    }
+    
+    private func playFishCaughtSound(duration: TimeInterval = 1.5){
+        let audioPath = "Fishing Game Action.wav"
+        let fishCaughtSoundEffect = SKAudioNode(fileNamed: audioPath)
+        fishCaughtSoundEffect.autoplayLooped = false
+        fishCaughtSoundEffect.isPositional = false
+        fishCaughtSoundEffect.run(SKAction.changeVolume(to: 1, duration: 0))
+        addChild(fishCaughtSoundEffect)
+        
+        fishCaughtSoundEffect.run(
             SKAction.sequence([
                 SKAction.play(),
                 SKAction.wait(forDuration: duration),
@@ -227,6 +246,7 @@ class TestGameScene: SKScene {
         isWaitingForFish = false
         stoppedBaitPosition = nil
         catchTargetSystem.resetCatchSession()
+        playReelingSound(duration: hookSystem.resetToTopDuration)
         hookSystem.playTapAnimation()
         hookSystem.resetToTop()
         returnCameraToBasePosition { [weak self] in
@@ -270,17 +290,20 @@ class TestGameScene: SKScene {
             currentTime: currentTime,
             onHooked: { [weak self] caughtFish in
                 guard let self else { return }
-                
+                self.playFishCaughtSound(duration: 0.2)
+                self.playHaptic()
                 self.isWaitingForFish = false
+                self.playReelingSound(duration: self.hookSystem.resetToTopDuration)
                 self.hookSystem.attachCaughtFish(
                     caughtFish,
                     in: self
                 )
                 self.returnCameraToBasePosition { [weak self] in
-                    self?.hookSystem.removeAttachedFish()
-                    self?.catchTargetSystem.resetCatchSession()
-                    self?.stoppedBaitPosition = nil
-                    self?.isHookCastActive = false
+                    guard let self else { return }
+                    self.hookSystem.removeAttachedFish()
+                    self.catchTargetSystem.resetCatchSession()
+                    self.stoppedBaitPosition = nil
+                    self.isHookCastActive = false
                 }
             },
             onFailed: { [weak self] _ in
@@ -289,6 +312,11 @@ class TestGameScene: SKScene {
         ) != nil {
             isWaitingForFish = false
         }
+    }
+    
+    private func playHaptic(){
+        heavyImpactFeedBack.impactOccurred()
+        heavyImpactFeedBack.prepare()
     }
     
     private func layer(for yPosition: CGFloat) -> FishGenerator.SeaLayer {
@@ -353,6 +381,7 @@ class TestGameScene: SKScene {
             }
         }
     }
+    
     
     private func spawnFish(layer: FishGenerator.SeaLayer) {
         FishGenerator.spawnFish(
