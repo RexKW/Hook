@@ -26,12 +26,12 @@ class MovementSystem: GKComponent {
             
             if input.isHolding {
                 // 1. Move the hook deeper the longer they hold
-                let dropSpeed: CGFloat = 800.0 // Adjust this to make it drop faster/slower
-                node.position.y -= (dropSpeed * CGFloat(deltaTime))
+                let speed = move.dropSpeed > 0 ? move.dropSpeed : 800.0
+                node.position.y -= (speed * CGFloat(deltaTime))
                 
                 // Optional: Put a hard limit so it doesn't go below the sea floor
-                if node.position.y <= -5760 {
-                    node.position.y = -5760
+                if node.position.y <= -6150{
+                    node.position.y = -6150
                     print("Reached bottom!")
                     state.stateMachine.enter(WaitingState.self)
                 }
@@ -60,10 +60,6 @@ class MovementSystem: GKComponent {
                 }
                 
         } else if state.stateMachine.currentState is ReelingState {
-//                node.position.y += (move.reelSpeed * CGFloat(deltaTime))
-//                
-//                let diffX = rodTip.x - node.position.x
-//                node.position.x += diffX * 0.1
                 
                 if node.position.y >= -940 {
                     node.position.y = -847

@@ -5,7 +5,6 @@
 //  Created by Rex Kenny Wirasantoso on 11/05/26.
 //
 
-
 import SpriteKit
 import GameplayKit
 
@@ -34,7 +33,9 @@ class GameScene: SKScene {
     
     ///Variables
     var rodTipPosition: CGPoint {
+
         return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
+
     }
     var success: Bool = false
     var lastUpdateTime: TimeInterval = 0
@@ -57,7 +58,11 @@ class GameScene: SKScene {
             print("❌ ERROR: Salah satu Node tidak ditemukan. Cek nama di .sks!")
             return
         }
-        
+
+        characterNode.zPosition = 10
+        lineNode.zPosition = 11
+        hookNode.zPosition = 12
+
         [characterNode, hookNode, lineNode].forEach { $0?.texture?.filteringMode = .nearest }
         
         setupCamera()
@@ -124,7 +129,6 @@ class GameScene: SKScene {
                     return
                 }
             
-            
             // If the game is already over, don't do anything
             if variables.catchProgress >= 1.0 {
                 print("Fish already caught! Resetting...")
@@ -151,8 +155,6 @@ class GameScene: SKScene {
             } else {
                 print("Miss! Fish pulling away. Progress: \(variables.catchProgress)")
                 
-        
-                
                 if variables.catchProgress <= 0.0 {
                     print("Fish escaped back to 0 progress...")
                 }
@@ -172,7 +174,8 @@ class GameScene: SKScene {
         elapsedTime += dt
 
         guard let entity = hookEntity,
-            let stateComp = entity.component(ofType: StateComponent.self) else { return }
+              
+        let stateComp = entity.component(ofType: StateComponent.self) else { return }
         
         let currentState = stateComp.stateMachine.currentState
         
@@ -181,7 +184,8 @@ class GameScene: SKScene {
         }
 
         if currentState is IdleState {
-            hookNode.position = rodTipPosition
+            hookNode.position = CGPoint(x: rodTipPosition.x - 5 , y: rodTipPosition.y - 20)
+            
         } else {
             if let movement = entity.component(ofType: MovementSystem.self) {
                 movement.update(deltaTime: dt, rodTip: rodTipPosition)
@@ -210,21 +214,20 @@ class GameScene: SKScene {
         entity.component(ofType: InputComponent.self)?.isTapped = false
     }
     
-    
     func updateLineVisual() {
+    
         let start = rodTipPosition
         let end = hookNode.position
         
         lineNode.position = start
         
-        let distance = start.y - end.y
+        let distance = abs(start.y - end.y)
         let textureHeight = lineNode.texture?.size().height ?? 1.0
-        
+            
         lineNode.yScale = max(0.01, distance / textureHeight)
-        
-        lineNode.zPosition = 10
-        hookNode.zPosition = 12
+        lineNode.zRotation = 0
     }
+
     
     @objc func randomAddClouds () {
         let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
@@ -233,10 +236,7 @@ class GameScene: SKScene {
             addCloud(initialCloud: initialClouds)
         }
         initialClouds = false
-            
 
-        
-        
     }
     
     @objc func addCloud (initialCloud: Bool) {
@@ -265,8 +265,6 @@ class GameScene: SKScene {
                     cloud.position = CGPoint(x: leftEdge, y: positionY)
                 }
         }
-        
-        
         
         
         self.addChild(cloud)
@@ -307,8 +305,6 @@ class GameScene: SKScene {
             // 5. Register with your Systems
         reelingSystem.addComponent(foundIn: self.wheelEntity)
         reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
-        
-        
             
             // 6. Attach your custom drawn shapes
             if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {

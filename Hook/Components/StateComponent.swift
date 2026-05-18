@@ -32,15 +32,10 @@ class StateComponent: GKComponent {
     }
 }
 
-//// Hook status
-//enum HookState {
-//    case idle, casting, waiting, reeling
-//}
-//
-//// Zone limits according to ship level
+// Zone limits according to ship level
 enum BoatTier: CGFloat {
-    case boatLevel1 = -5760
-    case boatLevel2 = -1000
-    case boatLevel3 = -4000
+    case boatLevel1 = -6150
+    case boatLevel2 = -10000
+    case boatLevel3 = -15800
 }
 
