@@ -8,6 +8,6 @@
 import GameplayKit
 
 class MovementComponent: GKComponent {
-    let dropSpeed: CGFloat = 100
+    let dropSpeed: CGFloat = 400
     let reelSpeed: CGFloat = 500
 }

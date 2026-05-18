@@ -197,7 +197,7 @@ class GameScene: SKScene {
                 success = false
                 elapsedTime = 0
             }else{
-                hookNode.position.y += 5.0
+                hookNode.position.y += 10.0
                 
             }
             
