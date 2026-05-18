@@ -32,6 +32,7 @@ class InterestedFishState: GKState {
             return
         }
         
+        let normalSpeed = fish.component(ofType: FishMovementComponent.self)?.moveSpeed ?? 100
         fish.component(ofType: FishMovementComponent.self)?.moveSpeed = 0
         node.removeAllActions()
         node.zRotation = 0
@@ -42,12 +43,19 @@ class InterestedFishState: GKState {
             y: hookPosition.y - 18
         )
         face(node, toward: approachPoint.x)
+        let approachDistance = distance(
+            from: node.position,
+            to: approachPoint
+        )
+        let approachDuration = TimeInterval(
+            approachDistance / max(normalSpeed, 1)
+        )
         
         node.run(
             SKAction.sequence([
                 SKAction.move(
                     to: approachPoint,
-                    duration: stateComp.approachDuration
+                    duration: approachDuration
                 ),
                 SKAction.run { [weak self] in
                     self?.stateComp.stateMachine.enter(NibbleFishState.self)
@@ -62,6 +70,15 @@ class InterestedFishState: GKState {
             .component(ofType: GKSKNodeComponent.self)?
             .node
             .removeAction(forKey: "interestedFish")
+    }
+    
+    private func distance(
+        from start: CGPoint,
+        to end: CGPoint
+    ) -> CGFloat {
+        let dx = end.x - start.x
+        let dy = end.y - start.y
+        return sqrt(dx * dx + dy * dy)
     }
     
     private func face(

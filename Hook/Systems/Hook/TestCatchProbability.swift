@@ -5,6 +5,7 @@
 //  Created by OpenAI on 13/05/26.
 //
 
+import GameplayKit
 import SpriteKit
 
 struct TestCatchProbability {
@@ -13,7 +14,7 @@ struct TestCatchProbability {
     
     static func chanceToCatch(
         fish: FishEntity,
-        hookPower: CGFloat = 5
+        boatPower: CGFloat = 5
     ) -> CGFloat {
         guard let movementComponent = fish.component(
             ofType: FishMovementComponent.self
@@ -22,7 +23,7 @@ struct TestCatchProbability {
         }
         
         let weight = max(movementComponent.weight, 1)
-        let rawChance = hookPower / (hookPower + weight)
+        let rawChance = boatPower / (boatPower + weight)
         
         return min(
             max(rawChance, minimumChance),
@@ -32,12 +33,12 @@ struct TestCatchProbability {
     
     static func didCatch(
         fish: FishEntity,
-        hookPower: CGFloat = 5,
+        boatPower: CGFloat = 5,
         roll: CGFloat = CGFloat.random(in: 0...1)
     ) -> Bool {
         roll <= chanceToCatch(
             fish: fish,
-            hookPower: hookPower
+            boatPower: boatPower
         )
     }
 }

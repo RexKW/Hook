@@ -13,6 +13,7 @@ class CameraFollowHookSystem {
     private var topOffsetY: CGFloat = 0
     private let centerOffsetY: CGFloat = 0
     private let hookCenteringSpeed: CGFloat = 260
+    private weak var attachedFishNode: SKNode?
     
     func attachHook(
         to camera: SKCameraNode,
@@ -52,6 +53,15 @@ class CameraFollowHookSystem {
         hookNode.position.x = 0
     }
     
+    func baitPosition(in scene: SKScene) -> CGPoint? {
+        guard let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node else {
+            return nil
+        }
+        
+        let baitLocalPosition = CGPoint(x: 0, y: -46)
+        return hookNode.convert(baitLocalPosition, to: scene)
+    }
+    
     func moveTowardCenter(deltaTime: TimeInterval) {
         guard let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node else {
             return
@@ -59,6 +69,39 @@ class CameraFollowHookSystem {
         
         let nextY = hookNode.position.y - hookCenteringSpeed * CGFloat(deltaTime)
         hookNode.position.y = max(nextY, centerOffsetY)
+    }
+    
+    func attachCaughtFish(
+        _ fish: FishEntity,
+        in scene: SKScene
+    ) {
+        guard
+            let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node,
+            let fishNode = fish.component(ofType: GKSKNodeComponent.self)?.node
+        else {
+            return
+        }
+        
+        let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
+        fishNode.removeAllActions()
+        fishNode.removeFromParent()
+        fishNode.position = hookNode.convert(fishScenePosition, from: scene)
+        fishNode.zRotation = fishNode.xScale >= 0 ? 0.35 : -0.35
+        fishNode.zPosition = 1001
+        hookNode.addChild(fishNode)
+        attachedFishNode = fishNode
+        let attachedOffsetX: CGFloat = fishNode.xScale >= 0 ? -40 : 40
+        fishNode.run(
+            SKAction.move(
+                to: CGPoint(x: attachedOffsetX, y: -70),
+                duration: 0.12
+            )
+        )
+    }
+    
+    func removeAttachedFish() {
+        attachedFishNode?.removeFromParent()
+        attachedFishNode = nil
     }
     
     func resetToTop() {

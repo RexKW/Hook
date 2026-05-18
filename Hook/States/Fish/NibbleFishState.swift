@@ -110,6 +110,7 @@ class NibbleFishState: GKState {
                 SKAction.run { [weak self] in
                     guard let self else { return }
                     self.restoreSwimming(for: fish)
+                    self.stateComp.ignoreHookUntilTime = CACurrentMediaTime() + 4
                     self.stateComp.onFailed?(fish)
                     self.stateComp.stateMachine.enter(SwimFishState.self)
                 }

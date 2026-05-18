@@ -17,7 +17,7 @@ class HookedFishState: GKState {
     }
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return false
+        return stateClass == SwimFishState.self
     }
     
     override func didEnter(from previousState: GKState?) {
@@ -35,7 +35,6 @@ class HookedFishState: GKState {
         }
         
         node.removeAllActions()
-        node.zPosition = 900
         face(node, toward: hookPosition.x)
         
         node.run(
@@ -43,7 +42,6 @@ class HookedFishState: GKState {
                 SKAction.move(to: hookPosition, duration: 0.25),
                 SKAction.run { [weak self] in
                     guard let self else { return }
-                    node.zRotation = .pi / 2
                     self.stateComp.onHooked?(fish)
                 }
             ]),
@@ -55,10 +53,14 @@ class HookedFishState: GKState {
         _ node: SKNode,
         toward targetX: CGFloat
     ) {
+        let tiltAngle: CGFloat = 0.18
+        
         if targetX > node.position.x {
             node.xScale = abs(node.xScale)
+            node.zRotation = tiltAngle
         } else if targetX < node.position.x {
             node.xScale = -abs(node.xScale)
+            node.zRotation = -tiltAngle
         }
     }
 }

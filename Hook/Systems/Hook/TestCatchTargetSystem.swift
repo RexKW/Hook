@@ -50,7 +50,7 @@ class TestCatchTargetSystem {
         }
         
         activeFish = targetFish
-        startInterestSequence(
+        startInterestedState(
             targetFish,
             hookPosition: hookPosition,
             currentTime: currentTime,
@@ -63,9 +63,43 @@ class TestCatchTargetSystem {
     }
     
     func resetCatchSession() {
+        cancelActiveFishAttempt()
         sessionStartTime = nil
         activeFish = nil
         caughtFish = nil
+    }
+    
+    private func cancelActiveFishAttempt() {
+        guard let fish = activeFish ?? caughtFish else {
+            return
+        }
+        
+        if let node = fish.component(ofType: GKSKNodeComponent.self)?.node {
+            node.removeAction(forKey: "interestedFish")
+            node.removeAction(forKey: "nibbleFish")
+            node.removeAction(forKey: "nibbleFail")
+            node.removeAction(forKey: "hookedFish")
+            node.zRotation = 0
+            node.zPosition = 0
+        }
+        
+        if let movement = fish.component(ofType: FishMovementComponent.self) {
+            movement.isHooked = false
+            movement.moveSpeed = 180 / max(movement.weight, 1)
+            movement.direction = CGVector(
+                dx: Bool.random() ? 1 : -1,
+                dy: CGFloat.random(in: movement.verticalDriftRange)
+            )
+        }
+        
+        if let stateComponent = fish.component(ofType: StateComponent.self) {
+            stateComponent.hookPosition = nil
+            stateComponent.sessionStartTime = nil
+            stateComponent.onHooked = nil
+            stateComponent.onFailed = nil
+            stateComponent.ignoreHookUntilTime = CACurrentMediaTime() + 1
+            stateComponent.stateMachine.enter(SwimFishState.self)
+        }
     }
     
     private func nearestFish(
@@ -77,8 +111,11 @@ class TestCatchTargetSystem {
             .filter { fish in
                 guard
                     let node = fish.component(ofType: GKSKNodeComponent.self)?.node,
+                    let movement = fish.component(ofType: FishMovementComponent.self),
+                    let state = fish.component(ofType: StateComponent.self),
                     node.parent != nil,
-                    fish.component(ofType: FishMovementComponent.self)?.layer == hookLayer
+                    movement.layer == hookLayer,
+                    state.ignoreHookUntilTime <= CACurrentMediaTime()
                 else {
                     return false
                 }
@@ -94,6 +131,33 @@ class TestCatchTargetSystem {
                     to: hookPosition
                 )
             }
+    }
+    
+    private func startInterestedState(
+        _ fish: FishEntity,
+        hookPosition: CGPoint,
+        currentTime: TimeInterval,
+        hookPower: CGFloat,
+        onHooked: @escaping (FishEntity) -> Void,
+        onFailed: @escaping (FishEntity) -> Void
+    ) {
+        guard let stateComponent = fish.component(ofType: StateComponent.self) else {
+            activeFish = nil
+            return
+        }
+        
+        stateComponent.hookPosition = hookPosition
+        stateComponent.hookPower = hookPower
+        stateComponent.sessionStartTime = currentTime
+        stateComponent.onHooked = { [weak self] hookedFish in
+            self?.caughtFish = hookedFish
+            onHooked(hookedFish)
+        }
+        stateComponent.onFailed = { [weak self] failedFish in
+            self?.activeFish = nil
+            onFailed(failedFish)
+        }
+        stateComponent.stateMachine.enter(InterestedFishState.self)
     }
     
     private func startInterestSequence(
@@ -118,6 +182,7 @@ class TestCatchTargetSystem {
         }
         
         node.removeAllActions()
+        node.zRotation = 0
         node.zPosition = 900
         
         let approachPoint = CGPoint(
@@ -133,27 +198,37 @@ class TestCatchTargetSystem {
             y: hookPosition.y - 18
         )
         
-        let rotateAction = SKAction.rotate(
-            toAngle: .pi / 2,
-            duration: 0.2,
-            shortestUnitArc: true
-        )
-        let approachAction = SKAction.move(
-            to: approachPoint,
-            duration: approachDuration
-        )
+        let approachAction = SKAction.sequence([
+            SKAction.run { [weak self, weak node] in
+                guard let node else { return }
+                self?.face(node, toward: approachPoint.x)
+            },
+            SKAction.move(
+                to: approachPoint,
+                duration: approachDuration
+            )
+        ])
         let hesitateAction = SKAction.sequence([
+            SKAction.run { [weak self, weak node] in
+                guard let node else { return }
+                self?.face(node, toward: circleLeft.x)
+            },
             SKAction.move(to: circleLeft, duration: hesitateDuration / 3),
+            SKAction.run { [weak self, weak node] in
+                guard let node else { return }
+                self?.face(node, toward: circleRight.x)
+            },
             SKAction.move(to: circleRight, duration: hesitateDuration / 3),
+            SKAction.run { [weak self, weak node] in
+                guard let node else { return }
+                self?.face(node, toward: hookPosition.x)
+            },
             SKAction.wait(forDuration: hesitateDuration / 3)
         ])
         
         node.run(
             SKAction.sequence([
-                SKAction.group([
-                    rotateAction,
-                    approachAction
-                ]),
+                approachAction,
                 hesitateAction,
                 SKAction.run { [weak self] in
                     self?.resolveBite(
@@ -213,6 +288,7 @@ class TestCatchTargetSystem {
             return
         }
         
+        face(node, toward: hookPosition.x)
         node.run(
             SKAction.sequence([
                 SKAction.move(
@@ -245,6 +321,7 @@ class TestCatchTargetSystem {
             y: node.position.y + CGFloat.random(in: -40...40)
         )
         
+        face(node, toward: awayPoint.x)
         node.run(
             SKAction.sequence([
                 SKAction.move(
@@ -273,6 +350,17 @@ class TestCatchTargetSystem {
             dx: Bool.random() ? 1 : -1,
             dy: CGFloat.random(in: movement.verticalDriftRange)
         )
+    }
+    
+    private func face(
+        _ node: SKNode,
+        toward targetX: CGFloat
+    ) {
+        if targetX > node.position.x {
+            node.xScale = abs(node.xScale)
+        } else if targetX < node.position.x {
+            node.xScale = -abs(node.xScale)
+        }
     }
     
     private func distanceSquared(

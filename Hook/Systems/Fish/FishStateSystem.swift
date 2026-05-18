@@ -9,6 +9,8 @@ import GameplayKit
 
 class FishStateSystem: GKComponent {
     override func update(deltaTime seconds: TimeInterval) {
+        
+        // Declare / update each fishes' state
         entity?
             .component(ofType: StateComponent.self)?
             .stateMachine
