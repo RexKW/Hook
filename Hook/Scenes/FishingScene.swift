@@ -123,15 +123,11 @@ class FishingScene: SKScene {
                 }
         }
         
-        
-        
-        
         self.addChild(cloud)
         
         let animationDuration:TimeInterval = 60
         
         var actionArray = [SKAction]()
-        
         
         
         if randomCloudDirection {
@@ -143,7 +139,6 @@ class FishingScene: SKScene {
         actionArray.append(SKAction.removeFromParent())
         
         cloud.run(SKAction.sequence(actionArray))
-        
     
     }
 
