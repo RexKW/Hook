@@ -12,7 +12,7 @@ class FishMovementSystem: GKComponent{
         print("deltaTime:", seconds)
         guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
               let moveData = entity?.component(ofType: FishMovementComponent.self),
-              let state = entity?.component(ofType: StateComponent.self)
+              let state = entity?.component(ofType: FishStateComponent.self)
         else { return }
 
         // Normal ECS movement only runs while the fish is swimming.

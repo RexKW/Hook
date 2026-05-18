@@ -8,9 +8,9 @@
 import GameplayKit
 
 class SwimFishState: GKState {
-    unowned let stateComp: StateComponent
+    unowned let stateComp: FishStateComponent
     
-    init(component: StateComponent){
+    init(component: FishStateComponent){
         self.stateComp = component
         super.init()
     }

@@ -92,7 +92,7 @@ class TestCatchTargetSystem {
             )
         }
         
-        if let stateComponent = fish.component(ofType: StateComponent.self) {
+        if let stateComponent = fish.component(ofType: FishStateComponent.self) {
             stateComponent.hookPosition = nil
             stateComponent.sessionStartTime = nil
             stateComponent.onHooked = nil
@@ -112,7 +112,7 @@ class TestCatchTargetSystem {
                 guard
                     let node = fish.component(ofType: GKSKNodeComponent.self)?.node,
                     let movement = fish.component(ofType: FishMovementComponent.self),
-                    let state = fish.component(ofType: StateComponent.self),
+                    let state = fish.component(ofType: FishStateComponent.self),
                     node.parent != nil,
                     movement.layer == hookLayer,
                     state.ignoreHookUntilTime <= CACurrentMediaTime()
@@ -141,7 +141,7 @@ class TestCatchTargetSystem {
         onHooked: @escaping (FishEntity) -> Void,
         onFailed: @escaping (FishEntity) -> Void
     ) {
-        guard let stateComponent = fish.component(ofType: StateComponent.self) else {
+        guard let stateComponent = fish.component(ofType: FishStateComponent.self) else {
             activeFish = nil
             return
         }

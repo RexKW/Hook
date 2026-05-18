@@ -12,7 +12,7 @@ class FishStateSystem: GKComponent {
         
         // Declare / update each fishes' state
         entity?
-            .component(ofType: StateComponent.self)?
+            .component(ofType: FishStateComponent.self)?
             .stateMachine
             .update(deltaTime: seconds)
     }

@@ -22,7 +22,7 @@ class FishEntity: GKEntity {
         addComponent(FishMovementComponent())
         addComponent(FishMovementSystem())
         addComponent(FishStateSystem())
-        let stateComponent = StateComponent()
+        let stateComponent = FishStateComponent()
         addComponent(stateComponent)
         stateComponent.stateMachine.enter(SwimFishState.self)
         

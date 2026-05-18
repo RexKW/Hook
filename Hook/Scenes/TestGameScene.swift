@@ -11,6 +11,8 @@ import GameplayKit
 class TestGameScene: SKScene {
     private let sceneCamera = SKCameraNode()
     private var backgroundMusic: SKAudioNode?
+    private var splashSound: SKAudioNode?
+    private var reelingSound: SKAudioNode?
     private var isHookCastActive = false
     private var isHoldingScreen = false
     private var isWaitingForFish = false
@@ -81,6 +83,46 @@ class TestGameScene: SKScene {
         )
     }
     
+    private func playSplashSound(duration: TimeInterval = 1.5) {
+        let audioPath = "Mountain Audio - Splash.mp3"
+        let splashSoundEffect = SKAudioNode(fileNamed: audioPath)
+        splashSoundEffect.autoplayLooped = false
+        splashSoundEffect.isPositional = false
+        splashSoundEffect.run(SKAction.changeVolume(to: 1, duration: 0))
+        addChild(splashSoundEffect)
+        
+        splashSoundEffect.run(
+            SKAction.sequence([
+                SKAction.play(),
+                SKAction.wait(forDuration: duration),
+                SKAction.removeFromParent()
+            ])
+        )
+    }
+    
+    private func playReelingSound(duration: TimeInterval = 1.5) {
+        guard reelingSound == nil else { return }
+        
+        let audioPath = "Fishing Reeling Reel.wav"
+        let reelingSoundEffect = SKAudioNode(fileNamed: audioPath)
+        reelingSoundEffect.autoplayLooped = false
+        reelingSoundEffect.isPositional = false
+        reelingSoundEffect.run(SKAction.changeVolume(to: 1, duration: 0))
+        addChild(reelingSoundEffect)
+        reelingSound = reelingSoundEffect
+        
+        reelingSoundEffect.run(
+            SKAction.sequence([
+                SKAction.play(),
+                SKAction.wait(forDuration: duration),
+                SKAction.removeFromParent(),
+                SKAction.run { [weak self] in
+                    self?.reelingSound = nil
+                }
+            ])
+        )
+    }
+    
     override func didMove(to view: SKView) {
         playBackgroundMusic()
         setupCamera()
@@ -127,7 +169,8 @@ class TestGameScene: SKScene {
             touchStartTime = touch.timestamp
             return
         }
-        
+        // Play splash sfx
+        playSplashSound()
         isHookCastActive = true
         isReturnTapPending = false
         sceneCamera.removeAction(forKey: "returnToBase")

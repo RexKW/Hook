@@ -9,9 +9,9 @@ import GameplayKit
 import SpriteKit
 
 class InterestedFishState: GKState {
-    unowned let stateComp: StateComponent
+    unowned let stateComp: FishStateComponent
     
-    init(component: StateComponent) {
+    init(component: FishStateComponent) {
         self.stateComp = component
         super.init()
     }
