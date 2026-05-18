@@ -184,7 +184,7 @@ class GameScene: SKScene {
         }
 
         if currentState is IdleState {
-            hookNode.position = CGPoint(x: rodTipPosition.x + 1 , y: rodTipPosition.y - 20)
+            hookNode.position = CGPoint(x: rodTipPosition.x - 5 , y: rodTipPosition.y - 20)
             
         } else {
             if let movement = entity.component(ofType: MovementSystem.self) {
