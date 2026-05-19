@@ -42,6 +42,21 @@ class MovementSystem: GKComponent {
                 state.stateMachine.enter(WaitingState.self)
             }
         }
+        
+        if state.stateMachine.currentState is WaitingState {
+            if input.isTapped {
+                stateMachine?.enter(CancelState.self)
+                
+            }
+        }
+        
+        if state.stateMachine.currentState is CancelState {
+            if node.position.y >= -847 {
+                node.position.y = -847
+                stateMachine?.enter(IdleState.self)
+            }
+            
+        }
 
         if state.stateMachine.currentState is IdleState {
                 
@@ -54,14 +69,14 @@ class MovementSystem: GKComponent {
                     node.position.y = limit
                 }
             
-                if input.isTapped {
-                    stateMachine?.enter(ReelingState.self)
-                    
-                }
+            
                 
-        } else if state.stateMachine.currentState is ReelingState {
                 
-                if node.position.y >= -940 {
+        }
+        
+        if state.stateMachine.currentState is ReelingState {
+                
+                if node.position.y >= -847 {
                     node.position.y = -847
                     stateMachine?.enter(IdleState.self)
                 }

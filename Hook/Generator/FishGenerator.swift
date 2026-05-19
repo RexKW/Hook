@@ -29,11 +29,11 @@ class FishGenerator {
 
         // MARK: - Sea Boundaries
 
-        let seaTop: CGFloat = 0
+        let seaTop: CGFloat = -1100
         let layerHeight = scene.size.height * 2.5
-        let epipelagicBottom = seaTop - layerHeight
-        let mesopelagicBottom = epipelagicBottom - layerHeight
-        let bathypelagicBottom = mesopelagicBottom - layerHeight
+        let epipelagicBottom = -6080.0
+        let mesopelagicBottom = -11040.0
+        let bathypelagicBottom = -15800.0
 
         // MARK: - Fish Data
 
@@ -96,9 +96,11 @@ class FishGenerator {
         )
 
         fishNode.size = CGSize(
-            width: 120,
-            height: 80
+            width: 200,
+            height: 160
         )
+        
+        fishNode.zPosition = 50
 
         // MARK: - Spawn Direction
 

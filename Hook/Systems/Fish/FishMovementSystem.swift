@@ -9,7 +9,6 @@ import GameplayKit
 
 class FishMovementSystem: GKComponent{
     override func update(deltaTime seconds: TimeInterval){
-        print("deltaTime:", seconds)
         guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
               let moveData = entity?.component(ofType: FishMovementComponent.self),
               let state = entity?.component(ofType: FishStateComponent.self)
@@ -34,10 +33,6 @@ class FishMovementSystem: GKComponent{
         // Calculate the velocity
         moveData.velocity.dx = moveData.direction.dx * moveData.moveSpeed
         moveData.velocity.dy = moveData.direction.dy * moveData.moveSpeed
-        print("direction:", moveData.direction)
-        print("speed:", moveData.moveSpeed)
-        print("velocity:", moveData.velocity)
-        print("before position:", node.position)
         
         // Applying the movement
         node.position = CGPoint(
@@ -52,8 +47,6 @@ class FishMovementSystem: GKComponent{
             node.position.y = moveData.yRange.upperBound
             moveData.direction.dy = -abs(moveData.direction.dy)
         }
-
-        print("after position:", node.position)
         
         // Remove fish if it goes off screen horizontally.
         let minX: CGFloat = -500

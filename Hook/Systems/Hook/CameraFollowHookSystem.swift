@@ -16,41 +16,20 @@ class CameraFollowHookSystem {
     private weak var attachedFishNode: SKNode?
     
     func attachHook(
-        to camera: SKCameraNode,
+        entity: HookEntity,
         viewportHeight: CGFloat
     ) {
-        guard hookEntity == nil else {
-            return
-        }
-        
-        topOffsetY = viewportHeight * 0.28
-        
-        let hookNode = SKSpriteNode(
-            color: .white,
-            size: CGSize(width: 6, height: 80)
-        )
-        hookNode.name = "cameraFollowHook"
-        hookNode.position = CGPoint(x: 0, y: topOffsetY)
-        hookNode.zPosition = 1000
-        
-        let baitNode = SKShapeNode(circleOfRadius: 12)
-        baitNode.position = CGPoint(x: 0, y: -46)
-        baitNode.fillColor = .red
-        baitNode.strokeColor = .white
-        baitNode.lineWidth = 2
-        hookNode.addChild(baitNode)
-        
-        let hookEntity = HookEntity(node: hookNode)
-        self.hookEntity = hookEntity
-        camera.addChild(hookNode)
+        self.hookEntity = entity
+        self.topOffsetY = viewportHeight * 0.28
+//        camera.addChild(hookNode)
     }
     
     func update() {
-        guard let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node else {
-            return
-        }
-        
-        hookNode.position.x = 0
+//        guard let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node else {
+//            return
+//        }
+//        
+//        hookNode.position.x = 0
     }
     
     func baitPosition(in scene: SKScene) -> CGPoint? {
@@ -81,6 +60,7 @@ class CameraFollowHookSystem {
         else {
             return
         }
+        print("hook scale:", hookNode.xScale, hookNode.yScale, "fish scale:", fishNode.xScale, fishNode.yScale)
         
         let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
         fishNode.removeAllActions()
@@ -90,6 +70,18 @@ class CameraFollowHookSystem {
         fishNode.zPosition = 1001
         hookNode.addChild(fishNode)
         attachedFishNode = fishNode
+        
+        // To make sure the fish doesn't get scaled down
+        do {
+            let hookScaleX = hookNode.xScale
+            let hookScaleY = hookNode.yScale
+            let sign: CGFloat = fishNode.xScale >= 0 ? 1.0 : -1.0
+            let safeX = max(abs(hookScaleX), 0.0001)
+            let safeY = max(abs(hookScaleY), 0.0001)
+            fishNode.xScale = sign * (1.0 / safeX)
+            fishNode.yScale = 1.0 / safeY
+        }
+        
         let attachedOffsetX: CGFloat = fishNode.xScale >= 0 ? -40 : 40
         fishNode.run(
             SKAction.move(

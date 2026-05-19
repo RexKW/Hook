@@ -19,6 +19,10 @@ class WaitingState: GKState {
 //        entity?.component(ofType: StateComponent.self)?.currentState = .waiting
     }
     
+    override func isValidNextState(_ stateClass: AnyClass) -> Bool {
+        return  stateClass is CancelState.Type || stateClass is ReelingState.Type
+    }
+    
     
 }
 

@@ -33,6 +33,7 @@ class ReelingVisualComponent: GKComponent {
         indicatorPath.move(to: .zero)
         indicatorPath.addLine(to: CGPoint(x: radius + 8, y: 0))
         indicatorNode = SKShapeNode(path: indicatorPath)
+        
         indicatorNode.strokeColor = .red
         indicatorNode.lineWidth = 4
         rootNode.addChild(indicatorNode)
