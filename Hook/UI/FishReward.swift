@@ -6,7 +6,7 @@ extension Color {
     static let DarkBrown = Color("Color5")
     static let White  = Color("Color2")
 }
-// MARK: - Typography System
+// MARK: - Typeface System
 extension Font {
     // 1. Title Font Variation
     static func gameTitle(size: CGFloat = 32) -> Font {
@@ -15,13 +15,12 @@ extension Font {
     
     // 2. Body Font Variation
     static func gameBody(size: CGFloat = 24) -> Font {
-        // Replace "YourBodyFont-Regular" with your actual font file's PostScript name
-        return .custom("loficoregular", size: size)
+        return .custom("Loficore", size: size)
     
     }
     // 3. Overlay Font Variation
     static func gameOverlay(size: CGFloat = 18) -> Font {
-        return .custom("loficoregular", size: size)
+        return .custom("Loficore", size: size)
     }
 }
 
@@ -31,6 +30,7 @@ struct Fish: Identifiable {
     let name: String
     let imageName: String
     let weightKg: Double
+    let imageHeight: CGFloat?
 
     var formattedWeight: String {
         let formatted = String(format: "%.1f", weightKg).replacingOccurrences(of: ".", with: ",")
@@ -39,8 +39,8 @@ struct Fish: Identifiable {
     
     // Sample data for your game
     static let sampleData: [Fish] = [
-        Fish(name: "Ruby snapper", imageName: "ruby_snapper", weightKg: 1.2),
-        Fish(name: "Blue Marlin", imageName: "blue_marlin", weightKg: 8.5)
+        Fish(name: "Ruby snapper", imageName: "RubySnapperColor", weightKg: 1.2, imageHeight: 150),
+        Fish(name: "Blue Marlin", imageName: "BlueMarlinFishColor", weightKg: 8.5, imageHeight: 200)
     ]
 }
 
@@ -82,7 +82,7 @@ struct GameView: View {
     }
 }
 
-// MARK : -4. Popup View
+// MARK: - 4. Popup View
 struct FishCatchPopupView: View {
     let fish: Fish
     let onDismiss: () -> Void
@@ -91,82 +91,78 @@ struct FishCatchPopupView: View {
 
     var body: some View {
         ZStack {
-            // Background Dim
+            // Background Overlay
             Color.black.opacity(0.2)
                 .ignoresSafeArea()
                 .onTapGesture { dismiss() }
-
+            
             VStack(spacing: 24) {
+                
+                // POLAROID CARD CONTAINER
                 ZStack {
-                    // BACKGROUND CONTAINER ASSET
+                    // LAYER 1: BACKGROUND ASSET
                     Image("polaroid")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 300)
                     
-                    // FOREGROUND DATA
+                    // LAYER 2: FISH IMAGE
+                    Image(fish.imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: fish.imageHeight)
+                        .offset(y: isAnimating ? 0 : 15)
+                    
+                    // LAYER 3: TEXT DATA
                     VStack(spacing: 0) {
-                        
-                        // TITLE TEXT
+                      
                         Text(fish.name)
-                            .font(.gameTitle(size: 24)) // Clean Title Call
-                            .foregroundColor(.DarkBrown) // Clean Color Call
+                            .font(.gameTitle(size: 32))
+                            .foregroundColor(.DarkBrown)
                             .padding(.top, 24)
                         
                         Spacer()
-                        
-                        // FISH ASSET
-                        Image(fish.imageName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 90)
-                            .offset(y: isAnimating ? 0 : 15)
-                        
-                        Spacer()
-                        
-                        // WEIGHT TEXT
                         Text(fish.formattedWeight)
-                            .font(.gameBody(size: 20)) // Clean Body Call
+                            .font(.gameBody(size: 20))
                             .foregroundColor(.white)
                             .padding(.bottom, 24)
                     }
                     .frame(width: 280, height: 320)
                 }
+                .onTapGesture { dismiss() }
                 
-                // DISMISS TEXT
                 Text("Tap to dismiss")
-                    .font(.gameBody(size: 22)) // Clean Body Call
-                    .foregroundColor(Color.white)// Clean Color Call
+                    .font(.gameBody(size: 22))
+                    .foregroundColor(Color.white)
             }
-        }
+        } // The correct closing brace for the Main ZStack is here
         .opacity(isAnimating ? 1 : 0)
-        .scaleEffect(isAnimating ? 1 : 0.8)
         .onAppear {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                 isAnimating = true
             }
         }
-        .onTapGesture { dismiss() }
     }
 
     private func dismiss() {
-        withAnimation(.easeIn(duration: 0.15)) {
+        withAnimation(.easeOut(duration: 0.20)) {
             isAnimating = false
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
             onDismiss()
         }
     }
 }
+
 // MARK: - 5. Previews
-// These allow you to view the screens directly in the Xcode Canvas
 
 #Preview("1. Full Game Screen") {
     GameView()
 }
 
 #Preview("2. Popup View Only") {
-    // We pass a dummy fish just so the preview has something to render
+    // We pass a dummy fish just so the preview has data to render on the canvas
     FishCatchPopupView(fish: Fish.sampleData[0]) {
         print("Dismissed!")
     }
