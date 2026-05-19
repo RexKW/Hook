@@ -2,7 +2,6 @@ import SwiftUI
 
 // MARK: - Color System
 extension Color {
-    // These strings MUST match the names of the Color Sets in your Assets folder
     static let DarkBrown = Color("Color5")
     static let White  = Color("Color2")
 }
@@ -16,10 +15,10 @@ extension Font {
     // 2. Body Font Variation
     static func gameBody(size: CGFloat = 24) -> Font {
         return .custom("Loficore", size: size)
-    
+        
     }
     // 3. Overlay Font Variation
-    static func gameOverlay(size: CGFloat = 18) -> Font {
+    static func gameOverlay(size: CGFloat = 22) -> Font {
         return .custom("Loficore", size: size)
     }
 }
@@ -31,23 +30,33 @@ struct Fish: Identifiable {
     let imageName: String
     let weightKg: Double
     let imageHeight: CGFloat?
-
+    
     var formattedWeight: String {
         let formatted = String(format: "%.1f", weightKg).replacingOccurrences(of: ".", with: ",")
         return "\(formatted) kg"
     }
     
-    // Sample data for your game
+    // Sample data fish
     static let sampleData: [Fish] = [
+        Fish(name: "Oar Fish", imageName: "OarFishColor", weightKg: 1.2, imageHeight: 110),
         Fish(name: "Ruby snapper", imageName: "RubySnapperColor", weightKg: 1.2, imageHeight: 150),
-        Fish(name: "Blue Marlin", imageName: "BlueMarlinFishColor", weightKg: 8.5, imageHeight: 200)
+        Fish(name: "Marlin Fish", imageName: "BlueMarlinFishColor", weightKg: 7.5, imageHeight: 200),
+        Fish(name: "Mackerel Fish", imageName: "MackerelFishColor", weightKg: 8.5, imageHeight: 170),
+        Fish(name: "Giant Squid", imageName: "GiantSquidColor", weightKg: 2.5, imageHeight: 170),
+        Fish(name: "Bluenose Warehou", imageName: "BlueNoseWarehouColor", weightKg: 10.5, imageHeight: 120),
+        Fish(name: "Tuna Fish", imageName: "TunaFishColor", weightKg: 9.5, imageHeight: 320),
+        Fish(name: "Lion Fish", imageName: "LionFishColor", weightKg: 8.5, imageHeight: 200),
+        Fish(name: "FangTooth Fish", imageName: "FangToothColor", weightKg: 0.5, imageHeight: 200),
+        Fish(name: "Angler Fish", imageName: "AnglerFishColor", weightKg: 6.5, imageHeight: 200),
+        Fish(name: "Ratail Fish", imageName: "RatailFishColor", weightKg: 3.5, imageHeight: 160),
+        Fish(name: "Hatchet Fish", imageName: "HatchetFishColor", weightKg: 1.5, imageHeight: 150),
     ]
 }
 
 // MARK: - 3. Game Screen (Main View) delete this if the pop up view is finish
 struct GameView: View {
     @State private var caughtFish: Fish? = nil
-
+    
     var body: some View {
         ZStack {
             // 1. Your Game Background
@@ -86,9 +95,9 @@ struct GameView: View {
 struct FishCatchPopupView: View {
     let fish: Fish
     let onDismiss: () -> Void
-
+    
     @State private var isAnimating = false
-
+    
     var body: some View {
         ZStack {
             // Background Overlay
@@ -115,11 +124,11 @@ struct FishCatchPopupView: View {
                     
                     // LAYER 3: TEXT DATA
                     VStack(spacing: 0) {
-                      
+                        
                         Text(fish.name)
-                            .font(.gameTitle(size: 32))
+                            .font(.gameTitle(size: 28))
                             .foregroundColor(.DarkBrown)
-                            .padding(.top, 24)
+                            .padding(.top, 32)
                         
                         Spacer()
                         Text(fish.formattedWeight)
@@ -135,7 +144,7 @@ struct FishCatchPopupView: View {
                     .font(.gameBody(size: 22))
                     .foregroundColor(Color.white)
             }
-        } // The correct closing brace for the Main ZStack is here
+        }
         .opacity(isAnimating ? 1 : 0)
         .onAppear {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
@@ -143,7 +152,7 @@ struct FishCatchPopupView: View {
             }
         }
     }
-
+    
     private func dismiss() {
         withAnimation(.easeOut(duration: 0.20)) {
             isAnimating = false
@@ -161,9 +170,76 @@ struct FishCatchPopupView: View {
     GameView()
 }
 
-#Preview("2. Popup View Only") {
-    // We pass a dummy fish just so the preview has data to render on the canvas
+
+#Preview("Oar Fish") {
     FishCatchPopupView(fish: Fish.sampleData[0]) {
-        print("Dismissed!")
+        print("Oar Fish closed")
     }
 }
+#Preview("Ruby Snapper ") {
+    FishCatchPopupView(fish: Fish.sampleData[1]) {
+        print("Ruby Snapper closed")
+    }
+}
+
+#Preview("Marlin Fish ") {
+    FishCatchPopupView(fish: Fish.sampleData[2]) {
+        print("Blue Marlin closed")
+    }
+}
+
+#Preview("Mackerel Fish ") {
+    FishCatchPopupView(fish: Fish.sampleData[3]) {
+        print("Mackerel Fish closed")
+    }
+}
+
+#Preview("Giant Squid") {
+    FishCatchPopupView(fish: Fish.sampleData[4]) {
+        print("Giant squid closed")
+    }
+}
+
+#Preview("Bluenose Warehou") {
+    FishCatchPopupView(fish: Fish.sampleData[5]) {
+        print("bluenose warehou closed")
+    }
+}
+
+#Preview("Tuna Fish") {
+    FishCatchPopupView(fish: Fish.sampleData[6]) {
+        print("tuna fish closed")
+    }
+}
+
+#Preview("Lion Fish") {
+    FishCatchPopupView(fish: Fish.sampleData[7]) {
+        print("Lion fish closed")
+    }
+}
+
+#Preview("FangTooth Fish") {
+    FishCatchPopupView(fish: Fish.sampleData[8]) {
+        print("FangTooth fish closed")
+    }
+}
+
+#Preview("Angler Fish") {
+    FishCatchPopupView(fish: Fish.sampleData[9]) {
+        print("Anglerfish closed")
+    }
+}
+
+#Preview("Ratail Fish") {
+    FishCatchPopupView(fish: Fish.sampleData[10]) {
+        print("Ratail Fish closed")
+    }
+}
+
+#Preview("Hatchet Fish") {
+    FishCatchPopupView(fish: Fish.sampleData[11]) {
+        print("Hatchet Fish closed")
+    }
+}
+
+
