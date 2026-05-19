@@ -1,5 +1,6 @@
+
 //
-//  ReelingState.swift
+//  IdleState.swift
 //  Hook
 //
 //  Created by Rex Kenny Wirasantoso on 11/05/26.
@@ -7,7 +8,7 @@
 
 import GameplayKit
 
-class ReelingState: GKState {
+class   CancelState: GKState {
     unowned let statusComp: StateComponent
     
     init(component: StateComponent) {
@@ -16,7 +17,7 @@ class ReelingState: GKState {
     }
     
     override func didEnter(from previousState: GKState?) {
-        print("entered Reeling State")
+        print("Cancelled State")
         //        entity?.component(ofType: StateComponent.self)?.currentState = .reeling
         //    }
     }
@@ -24,5 +25,6 @@ class ReelingState: GKState {
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return  stateClass is IdleState.Type
     }
+    
+    
 }
-
