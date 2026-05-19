@@ -18,7 +18,8 @@ class StateComponent: GKComponent {
             IdleState(component: self),
             CastingState(component: self),
             WaitingState(component: self),
-            ReelingState(component: self)
+            ReelingState(component: self),
+            CancelState(component: self)
         ]
             
         self.stateMachine = GKStateMachine(states: states)
