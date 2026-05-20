@@ -41,7 +41,6 @@ class GameScene: SKScene {
     
     ///Variables
     var rodTipPosition: CGPoint {
-
         return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
 
     }
