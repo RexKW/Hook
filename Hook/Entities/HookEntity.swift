@@ -6,11 +6,13 @@
 //
 
 import GameplayKit
+import SpriteKit
 
 class HookEntity: GKEntity {
     var stateMachine: GKStateMachine?
     
-    init(node: SKNode, camera: SKCameraNode, bg: SKSpriteNode, pointer: SKSpriteNode, icon: SKSpriteNode) {
+    // Perbarui parameter init agar menerima SKShapeNode dan SKLabelNode dari GameScene
+    init(node: SKNode, camera: SKCameraNode, bg: SKSpriteNode, pointer: SKSpriteNode, icon: SKSpriteNode, lockOverlay: SKShapeNode, lockLabel: SKLabelNode) {
         super.init()
         
         let nodeComponent = GKSKNodeComponent(node: node)
@@ -19,8 +21,13 @@ class HookEntity: GKEntity {
         let cameraComponent = CameraComponent(camera: camera)
         cameraComponent.target = node
         
-        // komponen logic dengan referensi node dari scene
-        let indicatorComponent = ProgressionIndicatorComponent(bg: bg, pointer: pointer, icon: icon)
+        let indicatorComponent = ProgressionIndicatorComponent(
+            bg: bg,
+            pointer: pointer,
+            icon: icon,
+            lockOverlay: lockOverlay,
+            lockLabel: lockLabel
+        )
         
         addComponent(StateComponent())
         addComponent(GameStateSystem())
@@ -35,4 +42,3 @@ class HookEntity: GKEntity {
     }
     required init?(coder: NSCoder) { fatalError() }
 }
-

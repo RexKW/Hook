@@ -27,6 +27,8 @@ class GameScene: SKScene {
     private var indikatorBg: SKSpriteNode!
     private var indikatorPointer: SKSpriteNode!
     private var zonaIcon: SKSpriteNode!
+    private var lockZoneOverlay: SKShapeNode!
+    private var lockZoneLabel: SKLabelNode!   
     
     /// Audio Nodes
     private var backgroundMusic: SKAudioNode?
@@ -63,7 +65,6 @@ class GameScene: SKScene {
     private let fishCountPerLayer = 20
     private let seaLayers: [FishGenerator.SeaLayer] = [.epipelagic, .mesopelagic, .bathypelagic]
     
-    
     // MARK: - Scene Lifecycle
     override func didMove(to view: SKView) {
         playBackgroundMusic()
@@ -86,24 +87,25 @@ class GameScene: SKScene {
         [characterNode, hookNode, lineNode].forEach { $0?.texture?.filteringMode = .nearest }
         
         setupCamera()
-        setupProgressionIndicator()
-        setupHook()
+        setupProgressionIndicator() // Harus dipanggil duluan agar node tercipta
+        setupHook()                 // Membawa referensi node yang sudah aman terbentuk
         
         if let realHookEntity = self.hookEntity {
             hookSystem.attachHook(entity: realHookEntity, viewportHeight: size.height)
         }
     }
     
-    
     // MARK: - Initializations
     func setupHook() {
         if let node = childNode(withName: "Hook") as? SKSpriteNode {
-            
+            // Membawa seluruh parameter node visual pelacak ke dalam HookEntity
             let entity = HookEntity(node: node,
                                     camera: mainCamera,
                                     bg: self.indikatorBg,
                                     pointer: self.indikatorPointer,
-                                    icon: self.zonaIcon)
+                                    icon: self.zonaIcon,
+                                    lockOverlay: self.lockZoneOverlay, // Parameter baru aman
+                                    lockLabel: self.lockZoneLabel)     // Parameter baru aman
             self.hookEntity = entity
             
             movementSystem.addComponent(foundIn: entity)
@@ -132,9 +134,29 @@ class GameScene: SKScene {
         indikatorPointer.zPosition = 2000
         zonaIcon.zPosition = 2100
         
-        [indikatorBg, indikatorPointer, zonaIcon].forEach { node in
-            node.texture?.filteringMode = .nearest
-            mainCamera.addChild(node)
+        // 🌟 PERBAIKAN: Alokasi Fisik Node Overlay dan Teks Sebelum Digunakan
+        let overlaySize = CGSize(width: self.size.width, height: self.size.height * 1.5)
+        lockZoneOverlay = SKShapeNode(rectOf: overlaySize)
+        lockZoneOverlay.fillColor = SKColor.black.withAlphaComponent(0.5)
+        lockZoneOverlay.strokeColor = .clear
+        lockZoneOverlay.zPosition = 1500
+        lockZoneOverlay.position = CGPoint(x: 0, y: -overlaySize.height / 2)
+        
+        lockZoneLabel = SKLabelNode(fontNamed: "AvenirNext-Bold") // Gunakan font bawaan iOS yang aman
+        lockZoneLabel.text = "Unlock in boat level 2"
+        lockZoneLabel.fontSize = 32
+        lockZoneLabel.fontColor = .lightGray
+        lockZoneLabel.horizontalAlignmentMode = .center
+        lockZoneLabel.verticalAlignmentMode = .center
+        lockZoneLabel.zPosition = 1501
+        lockZoneLabel.position = CGPoint(x: 0, y: -200)
+        
+        // Masukkan semua node yang telah terbentuk ke dalam kamera utama
+        [indikatorBg, indikatorPointer, zonaIcon, lockZoneOverlay, lockZoneLabel].forEach { node in
+            if let node = node {
+                if node is SKSpriteNode { (node as! SKSpriteNode).texture?.filteringMode = .nearest }
+                mainCamera.addChild(node)
+            }
         }
         
         let setengahLebarScene = self.size.width / 2
@@ -146,7 +168,8 @@ class GameScene: SKScene {
         zonaIcon.size = CGSize(width: 160, height: 160)
         zonaIcon.position = CGPoint(x: posisiX + 10, y: posisiY + (indikatorBg.size.height / 2) + 40)
         
-        [indikatorBg, indikatorPointer, zonaIcon].forEach { $0?.isHidden = true }
+        // Sekarang array ini aman dieksekusi tanpa memicu Unwrapped Optional Crash
+        [indikatorBg, indikatorPointer, zonaIcon, lockZoneOverlay, lockZoneLabel].forEach { $0?.isHidden = true }
     }
     
     func setupReeling() {
@@ -169,7 +192,6 @@ class GameScene: SKScene {
             wheelNode.addChild(visualComponent.rootNode)
         }
     }
-    
     
     // MARK: - Input Handling
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -219,7 +241,6 @@ class GameScene: SKScene {
         hookEntity?.component(ofType: InputComponent.self)?.handleTouchEnded()
     }
     
-    
     // MARK: - Main Update Game Loop
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 { lastUpdateTime = currentTime }
@@ -257,10 +278,8 @@ class GameScene: SKScene {
             if hookNode.position.y >= -847 { stateComp.stateMachine.enter(IdleState.self) }
         }
         
-        // Logika Reset saat Hook kembali ke permukaan air
         if hookNode.position.y >= -847 {
             mainCamera.childNode(withName: "Wheel")?.removeFromParent()
-            
             catchTargetSystem.resetCatchSession()
             stateComp.stateMachine.enter(IdleState.self)
         }
@@ -283,7 +302,6 @@ class GameScene: SKScene {
 
         entity.component(ofType: InputComponent.self)?.isTapped = false
         
-        // Oper urusan logika dan matematika visual ke ECS Component murni data
         if let indicator = entity.component(ofType: ProgressionIndicatorComponent.self) {
             indicator.updateProgress(currentState: currentState, hookPositionY: hookNode.position.y)
         }
