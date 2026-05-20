@@ -74,7 +74,7 @@ class GameScene: SKScene {
     private let fishCountPerLayer = 20
     
     override func didMove(to view: SKView) {
-        playBackgroundMusic()
+//        playBackgroundMusic()
         spawnFishInAllLayers()
 
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
