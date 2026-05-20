@@ -110,7 +110,7 @@ struct FishDetailView: View {
                             .resizable()
                             .frame(width: 58, height: 58)
                     }
-                    .offset(x: 0, y: 0)
+                    .offset(x: -13, y: -10)
                 }
                 .frame(width: cardWidth, height: cardHeight)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

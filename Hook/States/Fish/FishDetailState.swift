@@ -82,7 +82,7 @@ enum FishDatabase {
             silhouetteName: "OarFish",
             name: "Oar Fish",
             description: "Oarfish have negative rizz and are lowkey the most socially awkward creatures to ever exist",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 0.9
         ),
         // 8. Bluenose Warehou
@@ -91,7 +91,7 @@ enum FishDatabase {
             silhouetteName: "BluenoseWarehouFish",
             name: "Bluenose Warehou",
             description: "Bro is really out here living for like 70 years straight, just casually munching on squid and avoiding surface drama",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 1
         ),
         // 9. Angler Fish
@@ -100,7 +100,7 @@ enum FishDatabase {
             silhouetteName: "AnglerFish",
             name: "Angler Fish",
             description: "Bro is out here in the absolute midnight zone, sniffing around for a giant goth gf with a glowing headlamp",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 1.4
         ),
         // 10. Ratail Fish
@@ -109,7 +109,7 @@ enum FishDatabase {
             silhouetteName: "RatailFish",
             name: "Ratail Fish",
             description: "Imagine having zero visual rizz so you just start beatboxing in the dark hoping a girl notices you",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 1.2
         ),
         // 11. Fangtooth Fish
@@ -118,7 +118,7 @@ enum FishDatabase {
             silhouetteName: "FangToothFish",
             name: "Fangtooth Fish",
             description: "Fangtooth is literally out here looking like a whole sleep paralysis demon, but bro is only six inches tall",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 1.4
         ),
         // 12. Giant Squid
@@ -127,7 +127,7 @@ enum FishDatabase {
             silhouetteName: "GiantSquid",
             name: "Giant Squid",
             description: "Squid actually built different. Lurking just waiting to catch ops lacking in 4K",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 1
         )
     ]

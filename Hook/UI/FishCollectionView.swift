@@ -68,7 +68,7 @@ struct FishCollectionView: View {
                             .resizable()
                             .frame(width: 58, height: 60)
                     }
-                    .offset(x: 2, y: -1)
+                    .offset(x: 10, y: -9)
                 }
                 .frame(width: containerWidth, height: containerHeight)
                 .opacity(selectedFish == nil ? 1 : 0)   // fade album out on select
