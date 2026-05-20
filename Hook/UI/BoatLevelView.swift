@@ -62,7 +62,7 @@ struct BoatGameView: View {
                     
                     // --- PROGRESS BAR ---
                     ZStack(alignment: .leading) {
-                        Rectangle().fill(Color.black.opacity(0.5))
+                        Rectangle().fill(Color.darkcream)
                             .frame(width: 100, height: 25)
                         
                         Rectangle().fill(Color.blue)
@@ -75,7 +75,7 @@ struct BoatGameView: View {
                             .foregroundColor(.white)
                             .padding(.leading, 30)
                     }
-                    .border(Color.black, width: 2)
+                    .border(Color.DarkBrown, width: 2)
                 }
             }
             Spacer()
@@ -130,7 +130,7 @@ struct BoatGameView: View {
                     .scaledToFit()
                     .frame(width: 60, height: 60)
             }
-          
+            
             .offset(x: 76, y: 45)
         }
     }

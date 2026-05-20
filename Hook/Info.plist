@@ -4,8 +4,8 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Loficore</string>
-		<string>RawPixel-Bold</string>
+		<string>Loficore.otf</string>
+		<string>RawPixel-Bold.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

@@ -4,6 +4,9 @@ import SwiftUI
 extension Color {
     static let DarkBrown = Color("Color5")
     static let White  = Color("Color2")
+    static let LightBrown = Color("Color1")
+    static let Cream = Color("Color3")
+    static let darkcream = Color("Color4")
 }
 // MARK: - Typeface System
 extension Font {
@@ -31,6 +34,8 @@ struct Fish: Identifiable {
     let weightKg: Double
     let imageHeight: CGFloat?
     
+    
+    
     var formattedWeight: String {
         let formatted = String(format: "%.1f", weightKg).replacingOccurrences(of: ".", with: ",")
         return "\(formatted) kg"
@@ -57,6 +62,8 @@ struct Fish: Identifiable {
 struct GameView: View {
     @State private var caughtFish: Fish? = nil
     
+    
+    
     var body: some View {
         ZStack {
             // 1. Your Game Background
@@ -70,6 +77,7 @@ struct GameView: View {
                 Button("🎣 Catch Fish") {
                     // Randomly pick a fish from your sample data
                     caughtFish = Fish.sampleData.randomElement()
+                    //fontCall()
                 }
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
@@ -93,8 +101,12 @@ struct GameView: View {
 
 // MARK: - 4. Popup View
 struct FishCatchPopupView: View {
+    
+    
     let fish: Fish
     let onDismiss: () -> Void
+    
+    
     
     @State private var isAnimating = false
     
@@ -127,6 +139,7 @@ struct FishCatchPopupView: View {
                         
                         Text(fish.name)
                             .font(.gameTitle(size: 28))
+                            .font(.custom("RawPixel-Bold", size: 28))
                             .foregroundColor(.DarkBrown)
                             .padding(.top, 32)
                         
@@ -164,82 +177,10 @@ struct FishCatchPopupView: View {
     }
 }
 
+
 // MARK: - 5. Previews
 
 #Preview("1. Full Game Screen") {
     GameView()
 }
-
-
-#Preview("Oar Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[0]) {
-        print("Oar Fish closed")
-    }
-}
-#Preview("Ruby Snapper ") {
-    FishCatchPopupView(fish: Fish.sampleData[1]) {
-        print("Ruby Snapper closed")
-    }
-}
-
-#Preview("Marlin Fish ") {
-    FishCatchPopupView(fish: Fish.sampleData[2]) {
-        print("Blue Marlin closed")
-    }
-}
-
-#Preview("Mackerel Fish ") {
-    FishCatchPopupView(fish: Fish.sampleData[3]) {
-        print("Mackerel Fish closed")
-    }
-}
-
-#Preview("Giant Squid") {
-    FishCatchPopupView(fish: Fish.sampleData[4]) {
-        print("Giant squid closed")
-    }
-}
-
-#Preview("Bluenose Warehou") {
-    FishCatchPopupView(fish: Fish.sampleData[5]) {
-        print("bluenose warehou closed")
-    }
-}
-
-#Preview("Tuna Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[6]) {
-        print("tuna fish closed")
-    }
-}
-
-#Preview("Lion Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[7]) {
-        print("Lion fish closed")
-    }
-}
-
-#Preview("FangTooth Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[8]) {
-        print("FangTooth fish closed")
-    }
-}
-
-#Preview("Angler Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[9]) {
-        print("Anglerfish closed")
-    }
-}
-
-#Preview("Ratail Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[10]) {
-        print("Ratail Fish closed")
-    }
-}
-
-#Preview("Hatchet Fish") {
-    FishCatchPopupView(fish: Fish.sampleData[11]) {
-        print("Hatchet Fish closed")
-    }
-}
-
 
