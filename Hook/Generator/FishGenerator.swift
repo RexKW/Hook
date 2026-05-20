@@ -49,7 +49,7 @@ class FishGenerator {
             fishOptions = [
                 FishSpawnData(textureName: "Tuna fish", weightRange: 1...35),
                 FishSpawnData(textureName: "Mackerel", weightRange: 2...50),
-                FishSpawnData(textureName: "lionfish-export", weightRange: 0.2...1.2)
+                FishSpawnData(textureName: "Lion Fish", weightRange: 0.2...1.2)
             ]
 
             yRange = epipelagicBottom...seaTop
@@ -72,9 +72,9 @@ class FishGenerator {
         case .bathypelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 50...800),
+                FishSpawnData(textureName: "anglerfish-new1", weightRange: 50...800),
                 FishSpawnData(textureName: "Ratail fish", weightRange: 35...500),
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 40...700),
+                FishSpawnData(textureName: "fangtooth1-export 1", weightRange: 40...700),
                 FishSpawnData(textureName: "Giant Squid", weightRange: 68...907),
             ]
 
@@ -95,6 +95,14 @@ class FishGenerator {
 
         let fishNode = SKSpriteNode(
             texture: fishTexture
+        )
+        
+        let originalSize = fishTexture.size()
+        let scale: CGFloat = 0.3
+
+        fishNode.size = CGSize(
+            width: originalSize.width * scale,
+            height: originalSize.height * scale
         )
 
         // MARK: - Spawn Direction
@@ -131,7 +139,7 @@ class FishGenerator {
             )
 
             moveData.weight = CGFloat.random(in: selectedFish.weightRange)
-            moveData.moveSpeed = 180 / moveData.weight
+            moveData.moveSpeed = 180
             moveData.verticalDriftRange = verticalDriftRange
             moveData.directionChangeChance = directionChangeChance
             moveData.yRange = yRange

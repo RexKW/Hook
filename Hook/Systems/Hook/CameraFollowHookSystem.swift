@@ -87,20 +87,48 @@ class CameraFollowHookSystem {
         fishNode.removeAllActions()
         fishNode.removeFromParent()
         fishNode.position = hookNode.convert(fishScenePosition, from: scene)
-        fishNode.zRotation = fishNode.xScale >= 0 ? 0.35 : -0.35
         fishNode.zPosition = 1001
         hookNode.addChild(fishNode)
         attachedFishNode = fishNode
-        let attachedOffsetX: CGFloat = fishNode.xScale >= 0 ? -40 : 40
-        fishNode.run(
-            SKAction.move(
-                to: CGPoint(x: attachedOffsetX, y: -70),
-                duration: 0.12
+        
+        let baitPosition = CGPoint(x: 0, y: -50)
+        let mouthInset: CGFloat = 8
+        let directionToHook: CGFloat = baitPosition.x >= fishNode.position.x ? 1 : -1
+        let baseAttachedRotation = CGFloat.pi / 2
+        let wiggleAngle: CGFloat = 0.18
+        
+        if directionToHook > 0 {
+            fishNode.xScale = -abs(fishNode.xScale)
+        } else {
+            fishNode.xScale = abs(fishNode.xScale)
+        }
+        
+        if let fishSprite = fishNode as? SKSpriteNode {
+            fishSprite.anchorPoint = CGPoint(
+                x: min(mouthInset / max(fishSprite.size.width, 1), 0.5),
+                y: 0.5
             )
+        }
+        
+        fishNode.zRotation = baseAttachedRotation
+        
+        let attachedPosition = baitPosition
+        let wiggle = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.rotate(toAngle: baseAttachedRotation - wiggleAngle, duration: 0.08, shortestUnitArc: true),
+                SKAction.rotate(toAngle: baseAttachedRotation + wiggleAngle, duration: 0.08, shortestUnitArc: true)
+            ])
         )
+        
+        fishNode.run(
+            SKAction.move(to: attachedPosition, duration: 0.12),
+            withKey: "attachToHook"
+        )
+        fishNode.run(wiggle, withKey: "hookedFishWiggle")
     }
     
     func removeAttachedFish() {
+        attachedFishNode?.removeAction(forKey: "hookedFishWiggle")
         attachedFishNode?.removeFromParent()
         attachedFishNode = nil
     }

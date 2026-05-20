@@ -67,9 +67,9 @@ class FishMovementSystem: GKComponent{
         
         // Handle facing direction
         if moveData.direction.dx > 0 {
-            node.xScale = abs(node.xScale)
-        }else if moveData.direction.dx < 0{
             node.xScale = -abs(node.xScale)
+        }else if moveData.direction.dx < 0{
+            node.xScale = abs(node.xScale)
         }
     }
 }

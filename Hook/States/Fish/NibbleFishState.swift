@@ -144,9 +144,9 @@ class NibbleFishState: GKState {
         toward targetX: CGFloat
     ) {
         if targetX > node.position.x {
-            node.xScale = abs(node.xScale)
-        } else if targetX < node.position.x {
             node.xScale = -abs(node.xScale)
+        } else if targetX < node.position.x {
+            node.xScale = abs(node.xScale)
         }
     }
 }
