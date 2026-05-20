@@ -47,9 +47,9 @@ class FishGenerator {
         case .epipelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "lionfish-export", weightRange: 1...3),
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 1.5...3.5),
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 2...4)
+                FishSpawnData(textureName: "Tuna fish", weightRange: 1...35),
+                FishSpawnData(textureName: "Mackerel", weightRange: 2...50),
+                FishSpawnData(textureName: "Lion Fish", weightRange: 0.2...1.2)
             ]
 
             yRange = epipelagicBottom...seaTop
@@ -59,9 +59,10 @@ class FishGenerator {
         case .mesopelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 3...6),
-                FishSpawnData(textureName: "lionfish-export", weightRange: 2.5...5),
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 4...7)
+                FishSpawnData(textureName: "Ruby snapper", weightRange: 15...200),
+                FishSpawnData(textureName: "Hatchet Fish", weightRange: 5...60),
+                FishSpawnData(textureName: "OarFish", weightRange: 10...400),
+                FishSpawnData(textureName: "Bluenose warehou Fish", weightRange: 30...300)
             ]
 
             yRange = mesopelagicBottom...epipelagicBottom
@@ -71,9 +72,10 @@ class FishGenerator {
         case .bathypelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 6...10),
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 5...9),
-                FishSpawnData(textureName: "lionfish-export", weightRange: 7...12)
+                FishSpawnData(textureName: "anglerfish-new1", weightRange: 50...800),
+                FishSpawnData(textureName: "Ratail fish", weightRange: 35...500),
+                FishSpawnData(textureName: "fangtooth1-export 1", weightRange: 40...700),
+                FishSpawnData(textureName: "Giant Squid", weightRange: 68...907),
             ]
 
             yRange = bathypelagicBottom...mesopelagicBottom
@@ -94,10 +96,13 @@ class FishGenerator {
         let fishNode = SKSpriteNode(
             texture: fishTexture
         )
+        
+        let originalSize = fishTexture.size()
+        let scale: CGFloat = 0.3
 
         fishNode.size = CGSize(
-            width: 200,
-            height: 160
+            width: originalSize.width * scale,
+            height: originalSize.height * scale
         )
         
         fishNode.zPosition = 50
@@ -107,7 +112,7 @@ class FishGenerator {
         let spawnFromLeft = Bool.random()
 
         let spawnX: CGFloat =
-            spawnFromLeft ? -450 : 450
+            spawnFromLeft ? -750 : 750
 
         fishNode.position = CGPoint(
             x: spawnX,
@@ -135,8 +140,12 @@ class FishGenerator {
                 dy: CGFloat.random(in: verticalDriftRange)
             )
 
-            moveData.weight = CGFloat.random(in: selectedFish.weightRange)
-            moveData.moveSpeed = 180 / moveData.weight
+            let weight = CGFloat.random(in: selectedFish.weightRange)
+            let moveSpeed = speed(forWeight: weight, in: selectedFish.weightRange)
+            
+            moveData.weight = weight
+            moveData.baseMoveSpeed = moveSpeed
+            moveData.moveSpeed = moveSpeed
             moveData.verticalDriftRange = verticalDriftRange
             moveData.directionChangeChance = directionChangeChance
             moveData.yRange = yRange
@@ -150,5 +159,18 @@ class FishGenerator {
         // MARK: - Add To Scene
 
         scene.addChild(fishNode)
+    }
+    
+    private static func speed(
+        forWeight weight: CGFloat,
+        in weightRange: ClosedRange<CGFloat>
+    ) -> CGFloat {
+        let rangeSize = max(weightRange.upperBound - weightRange.lowerBound, 1)
+        let normalizedWeight = max(0, min(1, (weight - weightRange.lowerBound) / rangeSize))
+        let lightFishSpeed: CGFloat = 260
+        let heavyFishSpeed: CGFloat = 145
+        let randomVariation = CGFloat.random(in: -18...18)
+        
+        return heavyFishSpeed + ((1 - normalizedWeight) * (lightFishSpeed - heavyFishSpeed)) + randomVariation
     }
 }
