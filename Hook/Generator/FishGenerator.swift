@@ -75,6 +75,7 @@ class FishGenerator {
                 FishSpawnData(textureName: "anglerfish-new", weightRange: 50...800),
                 FishSpawnData(textureName: "Ratail fish", weightRange: 35...500),
                 FishSpawnData(textureName: "fangtooth1-export", weightRange: 40...700),
+                FishSpawnData(textureName: "Giant Squid", weightRange: 68...907),
             ]
 
             yRange = bathypelagicBottom...mesopelagicBottom
