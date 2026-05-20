@@ -10,7 +10,7 @@ import GameplayKit
 class HookEntity: GKEntity {
     var stateMachine: GKStateMachine?
     
-    init(node: SKNode, camera: SKCameraNode) {
+    init(node: SKNode, camera: SKCameraNode, bg: SKSpriteNode, pointer: SKSpriteNode, icon: SKSpriteNode) {
         super.init()
         
         let nodeComponent = GKSKNodeComponent(node: node)
@@ -19,6 +19,9 @@ class HookEntity: GKEntity {
         let cameraComponent = CameraComponent(camera: camera)
         cameraComponent.target = node
         
+        // komponen logic dengan referensi node dari scene
+        let indicatorComponent = ProgressionIndicatorComponent(bg: bg, pointer: pointer, icon: icon)
+        
         addComponent(StateComponent())
         addComponent(GameStateSystem())
         addComponent(InputComponent())
@@ -26,6 +29,7 @@ class HookEntity: GKEntity {
         addComponent(MovementSystem())
         addComponent(CameraSystem())
         addComponent(cameraComponent)
+        addComponent(indicatorComponent)
         
         stateMachine?.enter(IdleState.self)
     }
