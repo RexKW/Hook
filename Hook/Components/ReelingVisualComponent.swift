@@ -20,24 +20,31 @@ class ReelingVisualComponent: GKComponent {
 //    let progressBarFill: SKSpriteNode
     let maxBarWidth: CGFloat = 192.0
     
-    private let radius: CGFloat = 50.0
+    private let radius: CGFloat = 80
     
     override init() {
         // 1. Draw the smaller wheel
         wheelNode = SKShapeNode(circleOfRadius: radius)
         wheelNode.strokeColor = .darkGray
-        wheelNode.lineWidth = 8
+        wheelNode.lineWidth = 20
         rootNode.addChild(wheelNode)
-        // 2. Draw the indicator
-        let indicatorPath = CGMutablePath()
-        indicatorPath.move(to: .zero)
-        indicatorPath.addLine(to: CGPoint(x: radius + 8, y: 0))
-        indicatorNode = SKShapeNode(path: indicatorPath)
-        indicatorNode.strokeColor = .red
-        indicatorNode.lineWidth = 4
-        rootNode.addChild(indicatorNode)
-        rootNode.zPosition = 10
-        
+        // 2. Draw the indicator (Green Triangle, Pointing Inwards)
+                let indicatorPath = CGMutablePath()
+                // Tip of the triangle, pointing inwards towards the center
+                indicatorPath.move(to: CGPoint(x: radius - 5 + 30, y: 0))
+                // Top corner of the triangle base (outside the circle)
+                indicatorPath.addLine(to: CGPoint(x: radius + 15 + 30, y: 8))
+                // Bottom corner of the triangle base (outside the circle)
+                indicatorPath.addLine(to: CGPoint(x: radius + 15 + 30, y: -8))
+                indicatorPath.closeSubpath() // Closes the shape to make a proper triangle
+                
+                indicatorNode = SKShapeNode(path: indicatorPath)
+                indicatorNode.fillColor = .green
+                indicatorNode.strokeColor = .green
+                indicatorNode.lineWidth = 1
+                rootNode.addChild(indicatorNode)
+                
+                rootNode.zPosition = 10
 //        // 3. Draw Progress Bar Background (Positioned below the wheel)
 //        progressBarBackground = SKShapeNode(rectOf: CGSize(width: 200, height: 20), cornerRadius: 5)
 //        progressBarBackground.strokeColor = .white
