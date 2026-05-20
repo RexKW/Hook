@@ -47,9 +47,9 @@ class FishGenerator {
         case .epipelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "lionfish-export", weightRange: 1...3),
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 1.5...3.5),
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 2...4)
+                FishSpawnData(textureName: "Tuna fish", weightRange: 1...35),
+                FishSpawnData(textureName: "Mackerel", weightRange: 2...50),
+                FishSpawnData(textureName: "lionfish-export", weightRange: 0.2...1.2)
             ]
 
             yRange = epipelagicBottom...seaTop
@@ -59,9 +59,10 @@ class FishGenerator {
         case .mesopelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 3...6),
-                FishSpawnData(textureName: "lionfish-export", weightRange: 2.5...5),
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 4...7)
+                FishSpawnData(textureName: "Ruby snapper", weightRange: 15...200),
+                FishSpawnData(textureName: "Hatchet Fish", weightRange: 5...60),
+                FishSpawnData(textureName: "OarFish", weightRange: 10...400),
+                FishSpawnData(textureName: "Bluenose warehou Fish", weightRange: 30...300)
             ]
 
             yRange = mesopelagicBottom...epipelagicBottom
@@ -71,9 +72,9 @@ class FishGenerator {
         case .bathypelagic:
 
             fishOptions = [
-                FishSpawnData(textureName: "anglerfish-new", weightRange: 6...10),
-                FishSpawnData(textureName: "fangtooth1-export", weightRange: 5...9),
-                FishSpawnData(textureName: "lionfish-export", weightRange: 7...12)
+                FishSpawnData(textureName: "anglerfish-new", weightRange: 50...800),
+                FishSpawnData(textureName: "Ratail fish", weightRange: 35...500),
+                FishSpawnData(textureName: "fangtooth1-export", weightRange: 40...700),
             ]
 
             yRange = bathypelagicBottom...mesopelagicBottom
@@ -93,11 +94,6 @@ class FishGenerator {
 
         let fishNode = SKSpriteNode(
             texture: fishTexture
-        )
-
-        fishNode.size = CGSize(
-            width: 120,
-            height: 80
         )
 
         // MARK: - Spawn Direction
