@@ -7,8 +7,11 @@
 
 import SpriteKit
 import GameplayKit
+import SwiftUI
 
 class GameScene: SKScene {
+    @EnvironmentObject var gameVM: GameViewModel
+    
     /// Entities
     private var entities = [GKEntity]()
     private var hookEntity: HookEntity?
@@ -18,6 +21,7 @@ class GameScene: SKScene {
     private var reelingSound: SKAudioNode?
     private let mainCamera = SKCameraNode()
     var fishEntities: [FishEntity] = []
+    
     
     /// Systems
     let movementSystem = GKComponentSystem(componentClass: MovementSystem.self)
