@@ -30,9 +30,9 @@ class MovementSystem: GKComponent {
                 node.position.y -= (speed * CGFloat(deltaTime))
                 
                 // Optional: Put a hard limit so it doesn't go below the sea floor
-                if node.position.y <= -6150{
-                    node.position.y = -6150
-                    print("Reached bottom!")
+                if node.position.y <= limit{
+                    node.position.y = limit
+                    print("Reached bottom for current tier: \(limit)")
                     state.stateMachine.enter(WaitingState.self)
                 }
                 
