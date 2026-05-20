@@ -20,7 +20,7 @@ struct FishCollectionView: View {
     private let containerWidth: CGFloat = 360
     private let containerHeight: CGFloat = 560
 
-    // Holds the tapped fish; non-nil value drives the sheet.
+    // Holds the tapped fish; non-nil value shows the detail view.
     @State private var selectedFish: FishDetailState?
 
     var body: some View {
@@ -28,7 +28,7 @@ struct FishCollectionView: View {
             ZStack {
                 Color.blue.opacity(0.4).ignoresSafeArea()
 
-                // Container art defines the frame; everything layers on top.
+                // --- ALBUM (fades out when a fish is selected) ---
                 ZStack(alignment: .topTrailing) {
 
                     // 1. Background paper/frame art
@@ -70,18 +70,32 @@ struct FishCollectionView: View {
                     .offset(x: 2, y: -1)
                 }
                 .frame(width: containerWidth, height: containerHeight)
+                .opacity(selectedFish == nil ? 1 : 0)   // fade album out on select
+
+                // --- DETAIL (fades in over the same space, transparent backdrop) ---
+                if let fish = selectedFish {
+                    FishDetailView(fish: fish) {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            selectedFish = nil           // Back clears selection
+                        }
+                    }
+                    .transition(.opacity)
+                }
             }
-            // Item-based sheet: presents whenever selectedFish becomes non-nil.
-            .sheet(item: $selectedFish) { fish in
-                FishDetailView(fish: fish)
-            }
+            .animation(.easeInOut(duration: 0.25), value: selectedFish?.id)
         }
     }
 
     // MARK: - Single fish frame
     @ViewBuilder
     private func fishCell(for fish: FishDetailState) -> some View {
-        Button(action: { selectedFish = fish }) {
+        Button(action: {
+            if fish.isUnlocked {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedFish = fish
+                }
+            }
+        }) {
             ZStack {
                 Image("BorderIcon")
                     .resizable()
@@ -99,6 +113,7 @@ struct FishCollectionView: View {
             }
         }
         .buttonStyle(.plain)
+        .disabled(!fish.isUnlocked)   // locked fish can't be tapped
     }
 }
 

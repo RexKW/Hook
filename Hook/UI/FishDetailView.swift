@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct FishDetailView: View {
-    @Environment(\.dismiss) private var dismiss
-
     let fish: FishDetailState
+    var onBack: () -> Void
 
-    init(fish: FishDetailState = FishDatabase.all[0]) {
+    init(fish: FishDetailState = FishDatabase.all[0], onBack: @escaping () -> Void = {}) {
         self.fish = fish
+        self.onBack = onBack
     }
 
-    static let containerImageAsset = "ContainerFishAlbum"
+    static let containerImageAsset = "ContainerFishDetail"
 
     var body: some View {
         GeometryReader { proxy in
@@ -24,8 +24,7 @@ struct FishDetailView: View {
             let cardHeight = cardWidth * (560.0 / 360.0)
 
             ZStack {
-                Color.blue.opacity(0.4).ignoresSafeArea()
-
+                // No background fill — fully transparent.
                 ZStack(alignment: .topLeading) {
                     Image(Self.containerImageAsset)
                         .resizable()
@@ -35,12 +34,6 @@ struct FishDetailView: View {
                         Text("FISH LOG")
                             .font(.custom("RawPixel-Bold", size: 32))
                             .foregroundColor(.DarkBrown)
-                            .overlay(alignment: .bottom) {
-                                Rectangle()
-                                    .fill(Color.pink)
-                                    .frame(height: 3)
-                                    .offset(y: 6)
-                            }
                             .padding(.top, 30)
 
                         Image(fish.imageName)
@@ -51,12 +44,12 @@ struct FishDetailView: View {
                             .padding(.top, 6)
 
                         Rectangle()
-                            .fill(Color.DarkBrown.opacity(0.7))
+                            .fill(Color.DarkBrown)
                             .frame(height: 2)
                             .padding(.horizontal, 8)
 
                         Text(fish.name)
-                            .font(.custom("RawPixel-Bold", size: 26))
+                            .font(.custom("Loficore", size: 28))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -82,18 +75,12 @@ struct FishDetailView: View {
                             }
                         }
 
-                        Rectangle()
-                            .fill(Color.DarkBrown.opacity(0.4))
-                            .frame(height: 1)
-                            .padding(.horizontal, 8)
-                            .padding(.top, 2)
-
                         Text(fish.description)
-                            .font(.custom("RawPixel-Bold", size: 20))
+                            .font(.custom("Loficore", size: 18))
                             .foregroundColor(.DarkBrown)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(6)
-                            .padding(.horizontal, 4)
+                            .multilineTextAlignment(.leading)
+                            .lineSpacing(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         Spacer(minLength: 0)
                     }
@@ -102,14 +89,15 @@ struct FishDetailView: View {
                     .padding(.bottom, cardHeight * 0.06)
                     .frame(width: cardWidth, height: cardHeight)
 
-                    Button(action: { dismiss() }) {
+                    Button(action: { onBack() }) {
                         Image("ButtonBack")
                             .resizable()
-                            .frame(width: 52, height: 52)
+                            .frame(width: 58, height: 58)
                     }
-                    .offset(x: -6, y: 4)
+                    .offset(x: 0, y: 0)
                 }
                 .frame(width: cardWidth, height: cardHeight)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
     }
