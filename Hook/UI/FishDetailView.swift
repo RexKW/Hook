@@ -1,5 +1,5 @@
 //
-//  FishDetail.swift
+//  FishDetailView.swift
 //  Hook
 //
 //  Created by Rex Kenny Wirasantoso on 11/05/26.
@@ -7,103 +7,154 @@
 
 import SwiftUI
 
+struct FishDetail {
+    let imageName: String
+    let name: String
+    let bestWeight: String      // e.g. "20 Kg"
+    let timesCaught: Int        // e.g. 12
+    let description: String
+}
+
 struct FishDetailView: View {
-    // Fish detail card for displaying information about a single fish
-    static var backgroundImageAsset = "ContainerFishDetail"
-    
     @Environment(\.dismiss) private var dismiss
-    
+
+    let fish: FishDetail
+
+    // Default sample so previews / existing call sites still compile
+    init(fish: FishDetail = FishDetail(
+        imageName: "RubySnapperColor",
+        name: "Ruby Snapper",
+        bestWeight: "20 Kg",
+        timesCaught: 12,
+        description: "Ps= I'm not staring, my eyes are just built like this because the water pressure is too real, fr fr!"
+    )) {
+        self.fish = fish
+    }
+
+    static let containerImageAsset = "ContainerFishAlbum"
+
     var body: some View {
-        // Entire screen background layer
-        ZStack {
-            // Set white background to fill the device screen
-            Color.blue.opacity(0.4).ignoresSafeArea()
-            
-            // Vertically center the fish detail card
-            VStack {
-                // Push card to vertical center
-                Spacer()
-                
-                // Card container with decorative image and overlayed content
+        GeometryReader { proxy in
+            // Scale the whole card to the available width, keeping the art ratio.
+            let cardWidth = min(proxy.size.width * 0.88, 380)
+            let cardHeight = cardWidth * (560.0 / 360.0)   // match your container art ratio
+
+            ZStack {
+                Color.blue.opacity(0.4).ignoresSafeArea()
+
                 ZStack(alignment: .topLeading) {
-                    // Card background image asset
-                    Image("ContainerDetailFish")
+
+                    // 1. Background container art
+                    Image(Self.containerImageAsset)
                         .resizable()
-                        .frame(width: 400, height: 600)
-                        .aspectRatio(contentMode: .fit)
-                    
-                    Button(action: { dismiss() }) {
-                        Image("Button-Back")
-                            .resizable()
-                            .frame(width: 55, height: 55)
-                    }
-                    .padding(.top, 46)
-                    .padding(.leading, 21)
-                    
-                    // Stack all card content vertically
-                    VStack(spacing: 0) {
-                        // Title section: FISH LOG
+                        .scaledToFit()
+
+                    // 2. Card content
+                    VStack(spacing: 14) {
+
+                        // Title with pink underline
                         Text("FISH LOG")
-                            .font(.system(size: 28, weight: .heavy, design: .monospaced))
-                            .foregroundColor(.brown)
-                            .frame(height: 80)
-                            .padding(.top, 80)
-                        
-                        // Fish sprite image
-                        Image("")
+                            .font(.custom("RawPixel-Bold", size: 32))
+                            .foregroundColor(.DarkBrown)
+                            .overlay(alignment: .bottom) {
+                                Rectangle()
+                                    .fill(Color.pink)
+                                    .frame(height: 3)
+                                    .offset(y: 6)
+                            }
+                            .padding(.top, 30)
+
+                        // Fish image
+                        Image(fish.imageName)
                             .resizable()
                             .interpolation(.none)
                             .aspectRatio(contentMode: .fit)
-                            .frame(height: 110)
-                            .padding(.vertical, 8)
-                        
-                        // Fish name label in colored capsule
-                        Text("Ruby Snapper")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .frame(height: cardHeight * 0.26)
+                            .padding(.top, 6)
+
+                        // Divider line
+                        Rectangle()
+                            .fill(Color.DarkBrown.opacity(0.7))
+                            .frame(height: 2)
+                            .padding(.horizontal, 8)
+
+                        // Name plate
+                        Text(fish.name)
+                            .font(.custom("RawPixel-Bold", size: 26))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 8)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(Color(red: 164/255, green: 63/255, blue: 55/255)))
-                            .padding(.top, 2)
-                        
-                        // Info row: trophy and diamond icons with text
-                        HStack(spacing: 28) {
-                            HStack(spacing: 6) {
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color.DarkBrown)
+                            )
+
+                        // Stat pills row
+                        HStack(spacing: 12) {
+                            statPill {
                                 Image(systemName: "trophy.fill")
-                                    .foregroundColor(.yellow)
-                                Text("20 Kg")
-                                    .font(.system(size: 18, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.brown)
+                                    .foregroundColor(.white)
+                                Text(fish.bestWeight)
+                                    .font(.custom("RawPixel-Bold", size: 20))
+                                    .foregroundColor(.white)
                             }
-                            HStack(spacing: 6) {
+                            statPill {
                                 Image(systemName: "diamond.fill")
-                                    .foregroundColor(.gray)
-                                Text("12 Caught")
-                                    .font(.system(size: 18, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.brown)
+                                    .foregroundColor(.white)
+                                Text("\(fish.timesCaught) Caught")
+                                    .font(.custom("RawPixel-Bold", size: 20))
+                                    .foregroundColor(.white)
                             }
                         }
-                        .padding(.top, 8)
-                        
-                        // Description/caption text
-                        Text("Ps- I'm not staring, my eyes are just built like this because the water pressure is too real, fr fr!")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundColor(Color(red: 92/255, green: 55/255, blue: 28/255))
+
+                        // Thin divider above description
+                        Rectangle()
+                            .fill(Color.DarkBrown.opacity(0.4))
+                            .frame(height: 1)
+                            .padding(.horizontal, 8)
+                            .padding(.top, 2)
+
+                        // Description text
+                        Text(fish.description)
+                            .font(.custom("RawPixel-Bold", size: 20))
+                            .foregroundColor(.DarkBrown)
                             .multilineTextAlignment(.center)
-                            .padding(.top, 10)
-                            .padding(.horizontal, 16)
-                        
-                        // Spacer: push content to top within card
-                        Spacer()
+                            .lineSpacing(6)
+                            .padding(.horizontal, 4)
+
+                        Spacer(minLength: 0)
                     }
-                    // Constrain content width/height inside card
-                    .frame(width: 290, height: 340)
+                    .padding(.horizontal, cardWidth * 0.10)   // inset from wooden border
+                    .padding(.top, cardHeight * 0.04)
+                    .padding(.bottom, cardHeight * 0.06)
+                    .frame(width: cardWidth, height: cardHeight)
+
+                    // 3. Back button — top-left, overlapping the corner
+                    Button(action: { dismiss() }) {
+                        Image("ButtonBack")
+                            .resizable()
+                            .frame(width: 52, height: 52)
+                    }
+                    .offset(x: -6, y: 4)
                 }
-                
-                // Push card to vertical center
-                Spacer()
+                .frame(width: cardWidth, height: cardHeight)
             }
         }
+    }
+
+    // MARK: - Reusable stat pill
+    @ViewBuilder
+    private func statPill<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        HStack(spacing: 8) {
+            content()
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.DarkBrown)
+        )
     }
 }
 
