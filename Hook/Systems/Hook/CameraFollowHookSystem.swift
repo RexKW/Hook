@@ -17,41 +17,20 @@ class CameraFollowHookSystem {
     private weak var attachedFishNode: SKNode?
     
     func attachHook(
-        to camera: SKCameraNode,
+        entity: HookEntity,
         viewportHeight: CGFloat
     ) {
-        guard hookEntity == nil else {
-            return
-        }
-        
-        topOffsetY = viewportHeight * 0.28
-        
-        let hookNode = SKSpriteNode(
-            color: .white,
-            size: CGSize(width: 6, height: 80)
-        )
-        hookNode.name = "cameraFollowHook"
-        hookNode.position = CGPoint(x: 0, y: topOffsetY)
-        hookNode.zPosition = 1000
-        
-        let baitNode = SKShapeNode(circleOfRadius: 12)
-        baitNode.position = CGPoint(x: 0, y: -46)
-        baitNode.fillColor = .red
-        baitNode.strokeColor = .white
-        baitNode.lineWidth = 2
-        hookNode.addChild(baitNode)
-        
-        let hookEntity = HookEntity(node: hookNode)
-        self.hookEntity = hookEntity
-        camera.addChild(hookNode)
+        self.hookEntity = entity
+        self.topOffsetY = viewportHeight * 0.28
+//        camera.addChild(hookNode)
     }
     
     func update() {
-        guard let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node else {
-            return
-        }
-        
-        hookNode.position.x = 0
+//        guard let hookNode = hookEntity?.component(ofType: GKSKNodeComponent.self)?.node else {
+//            return
+//        }
+//        
+//        hookNode.position.x = 0
     }
     
     func baitPosition(in scene: SKScene) -> CGPoint? {
@@ -82,6 +61,7 @@ class CameraFollowHookSystem {
         else {
             return
         }
+        print("hook scale:", hookNode.xScale, hookNode.yScale, "fish scale:", fishNode.xScale, fishNode.yScale)
         
         let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
         fishNode.removeAllActions()

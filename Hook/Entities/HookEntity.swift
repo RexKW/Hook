@@ -5,19 +5,30 @@
 //  Created by Rex Kenny Wirasantoso on 11/05/26.
 //
 
-import GameKit
-import SpriteKit
+import GameplayKit
 
 class HookEntity: GKEntity {
-    init(node: SKSpriteNode){
+    var stateMachine: GKStateMachine?
+    
+    init(node: SKNode, camera: SKCameraNode) {
         super.init()
         
-        //MARK: - Visual Initialization
-        node.texture?.filteringMode = .nearest //To render the fish without causing the image to breakdown
-        addComponent(GKSKNodeComponent(node: node)) //Links GameplayKit with SpriteKit
+        let nodeComponent = GKSKNodeComponent(node: node)
+        addComponent(nodeComponent)
         
+        let cameraComponent = CameraComponent(camera: camera)
+        cameraComponent.target = node
+        
+        addComponent(StateComponent())
+        addComponent(GameStateSystem())
+        addComponent(InputComponent())
+        addComponent(MovementComponent())
+        addComponent(MovementSystem())
+        addComponent(CameraSystem())
+        addComponent(cameraComponent)
+        
+        stateMachine?.enter(IdleState.self)
     }
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError() }
 }
+
