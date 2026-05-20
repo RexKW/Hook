@@ -42,7 +42,7 @@ struct FishCollectionView: View {
                             .font(.custom("RawPixel-Bold", size: 32))
                             .foregroundColor(.DarkBrown)
                             .padding(.top, 36)
-                            .offset(x: -20, y: -20)
+                            .offset(x: -20, y: -8)
 
                         ScrollView(.vertical, showsIndicators: false) {
                             LazyVGrid(columns: Self.columns, spacing: 12) {
@@ -58,8 +58,9 @@ struct FishCollectionView: View {
                     }
                     // Inset content so it sits within the painted frame.
                     .padding(.horizontal, 34)
-                    .padding(.top, 18)
+                    .padding(.top, 8)
                     .padding(.bottom, 40)
+                    
 
                     // 3. Exit button overlapping the top-right corner
                     Button(action: { dismiss() }) {
