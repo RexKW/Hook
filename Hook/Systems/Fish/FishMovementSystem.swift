@@ -49,8 +49,8 @@ class FishMovementSystem: GKComponent{
         }
         
         // Remove fish if it goes off screen horizontally.
-        let minX: CGFloat = -500
-        let maxX: CGFloat = 500
+        let minX: CGFloat = -800
+        let maxX: CGFloat = 800
 
         if node.position.x < minX ||
             node.position.x > maxX {

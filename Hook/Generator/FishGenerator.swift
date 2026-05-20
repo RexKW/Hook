@@ -112,7 +112,7 @@ class FishGenerator {
         let spawnFromLeft = Bool.random()
 
         let spawnX: CGFloat =
-            spawnFromLeft ? -450 : 450
+            spawnFromLeft ? -750 : 750
 
         fishNode.position = CGPoint(
             x: spawnX,
@@ -140,8 +140,12 @@ class FishGenerator {
                 dy: CGFloat.random(in: verticalDriftRange)
             )
 
-            moveData.weight = CGFloat.random(in: selectedFish.weightRange)
-            moveData.moveSpeed = 180
+            let weight = CGFloat.random(in: selectedFish.weightRange)
+            let moveSpeed = speed(forWeight: weight, in: selectedFish.weightRange)
+            
+            moveData.weight = weight
+            moveData.baseMoveSpeed = moveSpeed
+            moveData.moveSpeed = moveSpeed
             moveData.verticalDriftRange = verticalDriftRange
             moveData.directionChangeChance = directionChangeChance
             moveData.yRange = yRange
@@ -155,5 +159,18 @@ class FishGenerator {
         // MARK: - Add To Scene
 
         scene.addChild(fishNode)
+    }
+    
+    private static func speed(
+        forWeight weight: CGFloat,
+        in weightRange: ClosedRange<CGFloat>
+    ) -> CGFloat {
+        let rangeSize = max(weightRange.upperBound - weightRange.lowerBound, 1)
+        let normalizedWeight = max(0, min(1, (weight - weightRange.lowerBound) / rangeSize))
+        let lightFishSpeed: CGFloat = 260
+        let heavyFishSpeed: CGFloat = 145
+        let randomVariation = CGFloat.random(in: -18...18)
+        
+        return heavyFishSpeed + ((1 - normalizedWeight) * (lightFishSpeed - heavyFishSpeed)) + randomVariation
     }
 }

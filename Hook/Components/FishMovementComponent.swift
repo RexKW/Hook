@@ -11,6 +11,7 @@ public class FishMovementComponent: GKComponent {
     var velocity: CGVector = .zero // CGVector is used to tell how fast and what direction it's going
     var direction: CGVector = CGVector(dx: 1, dy: 1) // Define fish's current horizontal & vertical movement direction
     var weight: CGFloat = 1 // Heavier fish move slower
+    var baseMoveSpeed: CGFloat = 180 // Restored after hook attempts
     var moveSpeed: CGFloat = 100 // Fish's movement speed
     
     var verticalDriftRange: ClosedRange<CGFloat> = -0.3...0.3

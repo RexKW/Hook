@@ -61,9 +61,10 @@ class CameraFollowHookSystem {
         else {
             return
         }
-        print("hook scale:", hookNode.xScale, hookNode.yScale, "fish scale:", fishNode.xScale, fishNode.yScale)
-        
         let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
+        let preservedXScale = abs(fishNode.xScale) / max(abs(hookNode.xScale), .leastNonzeroMagnitude)
+        let preservedYScale = fishNode.yScale / max(abs(hookNode.yScale), .leastNonzeroMagnitude)
+        
         fishNode.removeAllActions()
         fishNode.removeFromParent()
         fishNode.position = hookNode.convert(fishScenePosition, from: scene)
@@ -77,11 +78,8 @@ class CameraFollowHookSystem {
         let baseAttachedRotation = CGFloat.pi / 2
         let wiggleAngle: CGFloat = 0.18
         
-        if directionToHook > 0 {
-            fishNode.xScale = -abs(fishNode.xScale)
-        } else {
-            fishNode.xScale = abs(fishNode.xScale)
-        }
+        fishNode.xScale = directionToHook > 0 ? -preservedXScale : preservedXScale
+        fishNode.yScale = preservedYScale
         
         if let fishSprite = fishNode as? SKSpriteNode {
             fishSprite.anchorPoint = CGPoint(
