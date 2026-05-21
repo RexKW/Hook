@@ -7,8 +7,11 @@
 
 import SpriteKit
 import GameplayKit
+import SwiftUI
 
 class GameScene: SKScene {
+    @EnvironmentObject var gameVM: GameViewModel
+    
     /// Entities
     private var entities = [GKEntity]()
     private var hookEntity: HookEntity?
@@ -18,6 +21,7 @@ class GameScene: SKScene {
     private var reelingSound: SKAudioNode?
     private let mainCamera = SKCameraNode()
     var fishEntities: [FishEntity] = []
+    
     
     /// Systems
     let movementSystem = GKComponentSystem(componentClass: MovementSystem.self)
@@ -74,7 +78,7 @@ class GameScene: SKScene {
     private let fishCountPerLayer = 20
     
     override func didMove(to view: SKView) {
-        playBackgroundMusic()
+//        playBackgroundMusic()
         spawnFishInAllLayers()
 
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
@@ -208,21 +212,6 @@ class GameScene: SKScene {
                 variables.rotationSpeed += 0.2
                 elapsedTime = 0
                 
-                if hookNode.position.y >= -847 {
-                    print("FISH CAUGHT! You win!")
-                    variables.rotationSpeed = 0
-                    
-                    if let rodaPancing = mainCamera.childNode(withName: "Wheel") {
-                        rodaPancing.removeFromParent()
-                    }
-                    
-                    if let index = entities.firstIndex(of: wheel) {
-                        entities.remove(at: index)
-                    }
-                    
-                    stateComp.stateMachine.enter(IdleState.self)
-                }
-                
             } else {
                 print("Miss! Fish pulling away. Progress: \(variables.catchProgress)")
                 if variables.catchProgress <= 0.0 {
@@ -260,23 +249,31 @@ class GameScene: SKScene {
             }
         }
         
+        if stateComp.stateMachine.currentState is CancelState {
+            catchTargetSystem.resetCatchSession()
+        }
+        
         if success == true {
             if elapsedTime >= 0.5 || mainCamera.position.y >= 740 {
                 success = false
                 elapsedTime = 0
             } else {
                 hookNode.position.y += 10.0
+                if currentState is ReelingState && hookNode.position.y >= seaTop {
+                    finishCaughtFish(stateComp: stateComp)
+                    return
+                }
             }
         }
         
         if currentState is CancelState {
             hookNode.position.y += 15.0
-            if hookNode.position.y >= -847 {
+            if hookNode.position.y >= seaTop {
                 stateComp.stateMachine.enter(IdleState.self)
             }
         }
         
-        if hookNode.position.y >= -847 {
+        if !(currentState is IdleState) && hookNode.position.y >= seaTop {
             mainCamera.removeAllChildren()
             setupProgressionIndicator()
             catchTargetSystem.resetCatchSession()
@@ -301,6 +298,34 @@ class GameScene: SKScene {
         entity.component(ofType: InputComponent.self)?.isTapped = false
         
         updateMekanikIndikator()
+    }
+    
+    private func finishCaughtFish(stateComp: StateComponent) {
+        print("FISH CAUGHT! You win!")
+        success = false
+        elapsedTime = 0
+        hookNode.position.y = seaTop
+        hookSystem.removeAttachedFish()
+        
+        if let wheel = wheelEntity,
+           let variables = wheel.component(ofType: ReelingComponent.self) {
+            variables.rotationSpeed = 0
+        }
+        
+        if let rodaPancing = mainCamera.childNode(withName: "Wheel") {
+            rodaPancing.removeFromParent()
+        }
+        
+        if let wheel = wheelEntity,
+           let index = entities.firstIndex(of: wheel) {
+            entities.remove(at: index)
+        }
+        
+        wheelEntity = nil
+        mainCamera.removeAllChildren()
+        setupProgressionIndicator()
+        catchTargetSystem.resetCatchSession()
+        stateComp.stateMachine.enter(IdleState.self)
     }
     
     func updateMekanikIndikator() {
@@ -523,7 +548,10 @@ class GameScene: SKScene {
                 hookLayer: layer(for: hookNode.position.y),
                 currentTime: currentTime,
                 onHooked: { [weak self] caughtFish in
-                    guard let self else { return }
+                    guard let self,
+                          stateComp.stateMachine.currentState is WaitingState else {
+                        return
+                    }
                     
                     stateComp.stateMachine.enter(ReelingState.self)
                     hookSystem.attachCaughtFish(
@@ -531,7 +559,7 @@ class GameScene: SKScene {
                         in: self
                     )
                 },
-                onFailed: { [weak self] _ in
+                onFailed: { _ in
                     stateComp.stateMachine.enter(WaitingState.self)
                 }
             ) != nil { }

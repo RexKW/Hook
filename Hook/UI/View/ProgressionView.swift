@@ -1,18 +1,18 @@
 //
-//  ContentView.swift
+//  Progression.swift
 //  Hook
 //
-//  Created by Rex Kenny Wirasantoso on 14/05/26.
+//  Created by Rex Kenny Wirasantoso on 11/05/26.
 //
 
 import SwiftUI
 
-struct ContentView: View {
+struct ProgressionView: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
 #Preview {
-    ContentView()
+    ProgressionView()
 }

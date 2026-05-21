@@ -13,6 +13,7 @@ class CameraFollowHookSystem {
     private var topOffsetY: CGFloat = 0
     private let centerOffsetY: CGFloat = 0
     private let hookCenteringSpeed: CGFloat = 260
+    let resetToTopDuration: TimeInterval = 0.6
     private weak var attachedFishNode: SKNode?
     
     func attachHook(
@@ -60,38 +61,52 @@ class CameraFollowHookSystem {
         else {
             return
         }
-        print("hook scale:", hookNode.xScale, hookNode.yScale, "fish scale:", fishNode.xScale, fishNode.yScale)
-        
         let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
+        let preservedXScale = abs(fishNode.xScale) / max(abs(hookNode.xScale), .leastNonzeroMagnitude)
+        let preservedYScale = fishNode.yScale / max(abs(hookNode.yScale), .leastNonzeroMagnitude)
+        
         fishNode.removeAllActions()
         fishNode.removeFromParent()
         fishNode.position = hookNode.convert(fishScenePosition, from: scene)
-        fishNode.zRotation = fishNode.xScale >= 0 ? 0.35 : -0.35
         fishNode.zPosition = 1001
         hookNode.addChild(fishNode)
         attachedFishNode = fishNode
         
-        // To make sure the fish doesn't get scaled down
-        do {
-            let hookScaleX = hookNode.xScale
-            let hookScaleY = hookNode.yScale
-            let sign: CGFloat = fishNode.xScale >= 0 ? 1.0 : -1.0
-            let safeX = max(abs(hookScaleX), 0.0001)
-            let safeY = max(abs(hookScaleY), 0.0001)
-            fishNode.xScale = sign * (1.0 / safeX)
-            fishNode.yScale = 1.0 / safeY
+        let baitPosition = CGPoint(x: 0, y: -50)
+        let mouthInset: CGFloat = 8
+        let directionToHook: CGFloat = baitPosition.x >= fishNode.position.x ? 1 : -1
+        let baseAttachedRotation = CGFloat.pi / 2
+        let wiggleAngle: CGFloat = 0.18
+        
+        fishNode.xScale = directionToHook > 0 ? -preservedXScale : preservedXScale
+        fishNode.yScale = preservedYScale
+        
+        if let fishSprite = fishNode as? SKSpriteNode {
+            fishSprite.anchorPoint = CGPoint(
+                x: min(mouthInset / max(fishSprite.size.width, 1), 0.5),
+                y: 0.5
+            )
         }
         
-        let attachedOffsetX: CGFloat = fishNode.xScale >= 0 ? -40 : 40
-        fishNode.run(
-            SKAction.move(
-                to: CGPoint(x: attachedOffsetX, y: -70),
-                duration: 0.12
-            )
+        fishNode.zRotation = baseAttachedRotation
+        
+        let attachedPosition = baitPosition
+        let wiggle = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.rotate(toAngle: baseAttachedRotation - wiggleAngle, duration: 0.08, shortestUnitArc: true),
+                SKAction.rotate(toAngle: baseAttachedRotation + wiggleAngle, duration: 0.08, shortestUnitArc: true)
+            ])
         )
+        
+        fishNode.run(
+            SKAction.move(to: attachedPosition, duration: 0.12),
+            withKey: "attachToHook"
+        )
+        fishNode.run(wiggle, withKey: "hookedFishWiggle")
     }
     
     func removeAttachedFish() {
+        attachedFishNode?.removeAction(forKey: "hookedFishWiggle")
         attachedFishNode?.removeFromParent()
         attachedFishNode = nil
     }
@@ -103,7 +118,7 @@ class CameraFollowHookSystem {
         
         hookNode.removeAction(forKey: "resetToTop")
         hookNode.run(
-            SKAction.moveTo(y: topOffsetY, duration: 0.35),
+            SKAction.moveTo(y: topOffsetY, duration: resetToTopDuration),
             withKey: "resetToTop"
         )
     }
