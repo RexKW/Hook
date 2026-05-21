@@ -12,6 +12,7 @@ class TestCatchTargetSystem {
     private let guaranteedCatchDelay: TimeInterval = 14.5
     private let approachDuration: TimeInterval = 1.1
     private let hesitateDuration: TimeInterval = 1.0
+    private let maxCatchDistanceSquared: CGFloat = 300 * 300
     private var sessionStartTime: TimeInterval?
     private var activeFish: FishEntity?
     private(set) var caughtFish: FishEntity?
@@ -85,7 +86,7 @@ class TestCatchTargetSystem {
         
         if let movement = fish.component(ofType: FishMovementComponent.self) {
             movement.isHooked = false
-            movement.moveSpeed = 180 / max(movement.weight, 1)
+            movement.moveSpeed = movement.baseMoveSpeed
             movement.direction = CGVector(
                 dx: Bool.random() ? 1 : -1,
                 dy: CGFloat.random(in: movement.verticalDriftRange)
@@ -120,7 +121,10 @@ class TestCatchTargetSystem {
                     return false
                 }
                 
-                return true
+                return distanceSquared(
+                    from: fish,
+                    to: hookPosition
+                ) <= maxCatchDistanceSquared
             }
             .min { firstFish, secondFish in
                 distanceSquared(

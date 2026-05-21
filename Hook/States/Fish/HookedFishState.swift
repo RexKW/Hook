@@ -53,14 +53,14 @@ class HookedFishState: GKState {
         _ node: SKNode,
         toward targetX: CGFloat
     ) {
-        let tiltAngle: CGFloat = 0.18
+        let tiltAngle: CGFloat = 0.35
         
         if targetX > node.position.x {
             node.xScale = abs(node.xScale)
-            node.zRotation = tiltAngle
+            node.zRotation = -tiltAngle
         } else if targetX < node.position.x {
             node.xScale = -abs(node.xScale)
-            node.zRotation = -tiltAngle
+            node.zRotation = tiltAngle
         }
     }
 }
