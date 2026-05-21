@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FishCollectionView: View {
-    @Environment(\.dismiss) private var dismiss
+    @Binding var isPresent: Bool
+    @Query private var caughtFish: [FishModel]
 
     static let backgroundImageAsset = "ContainerFishAlbum"
     static let columns = [
@@ -46,7 +48,7 @@ struct FishCollectionView: View {
 
                         ScrollView(.vertical, showsIndicators: false) {
                             LazyVGrid(columns: Self.columns, spacing: 12) {
-                                ForEach(FishDatabase.all) { fish in
+                                ForEach(unlockedFishDatabase) { fish in
                                     fishCell(for: fish)
                                 }
                             }
@@ -63,7 +65,7 @@ struct FishCollectionView: View {
                     
 
                     // 3. Exit button overlapping the top-right corner
-                    Button(action: { dismiss() }) {
+                    Button(action: { isPresent.toggle() }) {
                         Image("ButtonExit")
                             .resizable()
                             .frame(width: 58, height: 60)
@@ -87,6 +89,27 @@ struct FishCollectionView: View {
         }
     }
 
+    private var unlockedFishDatabase: [FishDetailState] {
+        FishDatabase.all.map { fish in
+            var fish = fish
+            let catches = caughtFish.filter { $0.name.caseInsensitiveCompare(fish.name) == .orderedSame }
+            
+            if catches.isEmpty == false {
+                fish.isUnlocked = true
+                fish.timesCaught = catches.count
+                fish.bestWeight = bestWeightText(from: catches)
+            }
+            
+            return fish
+        }
+    }
+    
+    private func bestWeightText(from catches: [FishModel]) -> String {
+        let bestWeight = catches.map(\.weightKg).max() ?? 0
+        let formatted = String(format: "%.1f", bestWeight).replacingOccurrences(of: ".", with: ",")
+        return "\(formatted) Kg"
+    }
+    
     // MARK: - Single fish frame
     @ViewBuilder
     private func fishCell(for fish: FishDetailState) -> some View {
@@ -119,5 +142,5 @@ struct FishCollectionView: View {
 }
 
 #Preview {
-    FishCollectionView()
+    FishCollectionView(isPresent: .constant(false))
 }

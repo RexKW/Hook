@@ -1,4 +1,5 @@
 import SwiftUI
+import SpriteKit
 
 // MARK: - Color System
 extension Color {

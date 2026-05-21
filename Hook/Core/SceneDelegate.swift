@@ -7,6 +7,7 @@
 
 import UIKit
 import SwiftUI
+import SwiftData
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -26,6 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 // 1. Set up your SwiftUI view with its environment object
                 let contentView = ContentView()
                     .environmentObject(gameViewModel)
+                    .modelContainer(for: [FishModel.self, PlayerProgressModel.self])
                 
                 // 2. Wrap the SwiftUI view in a UIHostingController
                 let hostingController = UIHostingController(rootView: contentView)

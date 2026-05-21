@@ -10,6 +10,8 @@ import SwiftUI
 struct TopBarView: View {
     @Binding var isUpgradeMenuPresented: Bool
     
+    @Binding var isFishCollectionPresented: Bool
+    
     @Binding var currentBoatLevel: Int
     
     @Binding var playerProgress: CGFloat
@@ -50,7 +52,11 @@ struct TopBarView: View {
             Spacer()
             
             // --- BOOK BUTTON ASSET ---
-            Button(action: {}) {
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    isFishCollectionPresented.toggle()
+                }
+            }) {
                 Image("ButtonBook")
                     .resizable()
                     .scaledToFit()
@@ -69,6 +75,7 @@ struct TopBarView: View {
 #Preview {
     TopBarView(
         isUpgradeMenuPresented: .constant(false),
+        isFishCollectionPresented: .constant(false),
         currentBoatLevel: .constant(1),
         playerProgress: .constant(CGFloat(0.25))
     )

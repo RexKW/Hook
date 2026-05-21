@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 import SwiftUI
 import SwiftData
 
@@ -29,14 +30,37 @@ class GameViewModel: NSObject, ObservableObject {
     }
 
     func gainExperience() {
+        guard let caughtFish else { return }
+
         withAnimation(.easeInOut) {
-            playerProgress += 0.5 * (caughtFish?.weightKg ?? 0.0)
+            guard currentBoatLevel < maximumBoatLevel else {
+                playerProgress = 1.0
+                return
+            }
+
+            let requiredWeight = requiredWeightForNextLevel()
+            let gainedProgress = caughtFish.weightKg / requiredWeight
+            playerProgress = min(playerProgress + gainedProgress, 1.0)
+
             if playerProgress >= 1.0 {
                 playerProgress = 0.0
-                if currentBoatLevel < 3 {
-                    currentBoatLevel += 1
-                }
+                currentBoatLevel += 1
             }
+        }
+    }
+
+    private var maximumBoatLevel: Int {
+        3
+    }
+
+    private func requiredWeightForNextLevel() -> CGFloat {
+        switch currentBoatLevel {
+        case 1:
+            return 120.0
+        case 2:
+            return 1_200.0
+        default:
+            return .greatestFiniteMagnitude
         }
     }
 

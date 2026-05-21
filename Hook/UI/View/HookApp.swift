@@ -17,5 +17,6 @@ struct HookApp: App {
             ContentView()
                 .environmentObject(gameViewModel)
         }
+        .modelContainer(for: [FishModel.self, PlayerProgressModel.self])
     }
 }

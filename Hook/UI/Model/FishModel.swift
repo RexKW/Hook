@@ -44,7 +44,7 @@ class FishModel{
                 self.imageHeight = 200
 
             case "Ruby snapper", "Ruby Snapper":
-                self.name = "Ruby snapper"
+                self.name = "Ruby Snapper"
                 self.imageName = "RubySnapperColor"
                 self.imageHeight = 150
 
@@ -74,7 +74,7 @@ class FishModel{
                 self.imageHeight = 160
 
             case "fangtooth1-export 1":
-                self.name = "FangTooth Fish"
+                self.name = "Fangtooth Fish"
                 self.imageName = "FangToothColor"
                 self.imageHeight = 200
 

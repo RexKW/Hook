@@ -8,9 +8,13 @@
 import SpriteKit
 import GameplayKit
 import SwiftUI
+import SwiftData
+import UIKit
 
 class GameScene: SKScene {
     weak var gameVM: GameViewModel?
+    var modelContext: ModelContext?
+    private var displayedBoatLevel: Int?
     
     /// Entities
     private var entities = [GKEntity]()
@@ -19,6 +23,7 @@ class GameScene: SKScene {
     private var backgroundMusic: SKAudioNode?
     private var splashSound: SKAudioNode?
     private var reelingSound: SKAudioNode?
+    private var winAudioPlayer: SKAudioNode?
     private var cancelFishSound: SKAudioNode?
     private let mainCamera = SKCameraNode()
     var fishEntities: [FishEntity] = []
@@ -46,7 +51,7 @@ class GameScene: SKScene {
     private var zonaIcon: SKSpriteNode!
     private var lockZoneOverlay: SKShapeNode!
     private var lockZoneLabel: SKLabelNode!
-     
+    
     /// Boat Level
     let teksturBoatLvl1 = SKTexture(imageNamed: "Level 1_Idle")
     let teksturBoatLvl2 = SKTexture(imageNamed: "Level 2_Idle")
@@ -63,6 +68,7 @@ class GameScene: SKScene {
     
     var initialClouds: Bool = true
     private var elapsedTime = 0.0
+    private var didPlayCancelFishSound = false
     private var waitingStartedAt: TimeInterval?
     private let catchStartDelay: TimeInterval = 0.35
     
@@ -85,55 +91,56 @@ class GameScene: SKScene {
     private let fishCountPerLayer = 20
     
     override func didMove(to view: SKView) {
-            playBackgroundMusic()
-            spawnFishInAllLayers()
-
-            characterNode = childNode(withName: "Character2") as? SKSpriteNode
-            hookNode = childNode(withName: "Hook") as? SKSpriteNode
-            lineNode = childNode(withName: "Line") as? SKSpriteNode
-            
-            lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
-            
-            guard characterNode != nil, hookNode != nil, lineNode != nil else {
-                print("❌ ERROR: Salah satu Node tidak ditemukan. Cek nama di .sks!")
-                return
-            }
-
-            characterNode.zPosition = 10
-            lineNode.zPosition = 11
-            hookNode.zPosition = 12
-
-            [characterNode, hookNode, lineNode].forEach { $0?.texture?.filteringMode = .nearest }
-            
-            setupCamera()
-            setupProgressionIndicator() // Membuat bar dan tirai hitam overlay besar
-            setupHook()                 // 🌟 SEKARANG AKTIF! Mengisi hookEntity secara aman
-            
-            if let realHookEntity = self.hookEntity {
-                hookSystem.attachHook(
-                    entity: realHookEntity,
-                    viewportHeight: size.height
-                )
-            }
+        playBackgroundMusic()
+        spawnFishInAllLayers()
+        
+        characterNode = childNode(withName: "Character2") as? SKSpriteNode
+        hookNode = childNode(withName: "Hook") as? SKSpriteNode
+        lineNode = childNode(withName: "Line") as? SKSpriteNode
+        
+        lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
+        
+        guard characterNode != nil, hookNode != nil, lineNode != nil else {
+            print("❌ ERROR: Salah satu Node tidak ditemukan. Cek nama di .sks!")
+            return
         }
+        
+        characterNode.zPosition = 10
+        lineNode.zPosition = 11
+        hookNode.zPosition = 12
+        
+        [characterNode, hookNode, lineNode].forEach { $0?.texture?.filteringMode = .nearest }
+        syncBoatLevelVisuals()
+        
+        setupCamera()
+        setupProgressionIndicator() // Membuat bar dan tirai hitam overlay besar
+        setupHook()                 // 🌟 SEKARANG AKTIF! Mengisi hookEntity secara aman
+        
+        if let realHookEntity = self.hookEntity {
+            hookSystem.attachHook(
+                entity: realHookEntity,
+                viewportHeight: size.height
+            )
+        }
+    }
     
     func setupHook() {
-            if let node = childNode(withName: "Hook") as? SKSpriteNode {
-                // Membawa seluruh parameter node visual pelacak ke dalam HookEntity
-                let entity = HookEntity(node: node,
-                                        camera: mainCamera,
-                                        bg: self.indikatorBg,
-                                        pointer: self.indikatorPointer,
-                                        icon: self.zonaIcon,
-                                        lockOverlay: self.lockZoneOverlay,
-                                        lockLabel: self.lockZoneLabel)
-                self.hookEntity = entity
-                
-                movementSystem.addComponent(foundIn: entity)
-                cameraSystem.addComponent(foundIn: entity)
-                stateSystem.addComponent(foundIn: entity)
-            }
+        if let node = childNode(withName: "Hook") as? SKSpriteNode {
+            // Membawa seluruh parameter node visual pelacak ke dalam HookEntity
+            let entity = HookEntity(node: node,
+                                    camera: mainCamera,
+                                    bg: self.indikatorBg,
+                                    pointer: self.indikatorPointer,
+                                    icon: self.zonaIcon,
+                                    lockOverlay: self.lockZoneOverlay,
+                                    lockLabel: self.lockZoneLabel)
+            self.hookEntity = entity
+            
+            movementSystem.addComponent(foundIn: entity)
+            cameraSystem.addComponent(foundIn: entity)
+            stateSystem.addComponent(foundIn: entity)
         }
+    }
     
     private func setupCamera() {
         addChild(mainCamera)
@@ -141,59 +148,59 @@ class GameScene: SKScene {
     }
     
     private func setupProgressionIndicator() {
-            indikatorBg = SKSpriteNode(imageNamed: "Progression")
-            indikatorPointer = SKSpriteNode(imageNamed: "Indicator")
-            zonaIcon = SKSpriteNode(texture: teksturBoatLvl1)
-            
-            let longProgression: CGFloat = 1200.0
-            let wideProgression: CGFloat = 70.0
-            
-            indikatorBg.size = CGSize(width: wideProgression, height: longProgression)
-            indikatorPointer.size = CGSize(width: 100, height: 50)
-            
-            indikatorBg.zPosition = 1900
-            indikatorPointer.zPosition = 2000
-            zonaIcon.zPosition = 2100
-            
-            let overlaySize = CGSize(width: self.size.width, height: self.size.height * 2)
-            lockZoneOverlay = SKShapeNode(rectOf: overlaySize)
-            lockZoneOverlay.fillColor = SKColor.black.withAlphaComponent(0.5)
-            lockZoneOverlay.strokeColor = .clear
-            lockZoneOverlay.zPosition = 1500
-            lockZoneOverlay.position = CGPoint(x: 0, y: -overlaySize.height / 2)
-            
-            lockZoneLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
-            lockZoneLabel.text = "Unlock in boat level 2"
-            lockZoneLabel.fontSize = 80
-            lockZoneLabel.fontColor = .white
-            lockZoneLabel.horizontalAlignmentMode = .center
-            lockZoneLabel.verticalAlignmentMode = .center
-            lockZoneLabel.zPosition = 1501
-            lockZoneLabel.position = CGPoint(x: 0, y: -250)
-            
-            [indikatorBg, indikatorPointer, zonaIcon, lockZoneOverlay, lockZoneLabel].forEach { node in
-                if let node = node {
-                    if node is SKSpriteNode { (node as! SKSpriteNode).texture?.filteringMode = .nearest }
-                    mainCamera.addChild(node)
-                }
+        indikatorBg = SKSpriteNode(imageNamed: "Progression")
+        indikatorPointer = SKSpriteNode(imageNamed: "Indicator")
+        zonaIcon = SKSpriteNode(texture: teksturBoatLvl1)
+        
+        let longProgression: CGFloat = 1200.0
+        let wideProgression: CGFloat = 70.0
+        
+        indikatorBg.size = CGSize(width: wideProgression, height: longProgression)
+        indikatorPointer.size = CGSize(width: 100, height: 50)
+        
+        indikatorBg.zPosition = 1900
+        indikatorPointer.zPosition = 2000
+        zonaIcon.zPosition = 2100
+        
+        let overlaySize = CGSize(width: self.size.width, height: self.size.height * 2)
+        lockZoneOverlay = SKShapeNode(rectOf: overlaySize)
+        lockZoneOverlay.fillColor = SKColor.black.withAlphaComponent(0.5)
+        lockZoneOverlay.strokeColor = .clear
+        lockZoneOverlay.zPosition = 1500
+        lockZoneOverlay.position = CGPoint(x: 0, y: -overlaySize.height / 2)
+        
+        lockZoneLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        lockZoneLabel.text = "Unlock in boat level 2"
+        lockZoneLabel.fontSize = 80
+        lockZoneLabel.fontColor = .white
+        lockZoneLabel.horizontalAlignmentMode = .center
+        lockZoneLabel.verticalAlignmentMode = .center
+        lockZoneLabel.zPosition = 1501
+        lockZoneLabel.position = CGPoint(x: 0, y: -250)
+        
+        [indikatorBg, indikatorPointer, zonaIcon, lockZoneOverlay, lockZoneLabel].forEach { node in
+            if let node = node {
+                if node is SKSpriteNode { (node as! SKSpriteNode).texture?.filteringMode = .nearest }
+                mainCamera.addChild(node)
             }
-            
-            let setengahLebarScene = self.size.width / 2
-            let posisiX = -setengahLebarScene + 100
-            let posisiY: CGFloat = 40
-            
-            indikatorBg.position = CGPoint(x: posisiX, y: posisiY)
-            zonaIcon.size = CGSize(width: 160, height: 160)
-            zonaIcon.position = CGPoint(x: posisiX + 10, y: posisiY + (indikatorBg.size.height / 2) + 40)
-            
-            [indikatorBg, indikatorPointer, zonaIcon, lockZoneOverlay, lockZoneLabel].forEach { $0?.isHidden = true }
         }
+        
+        let setengahLebarScene = self.size.width / 2
+        let posisiX = -setengahLebarScene + 100
+        let posisiY: CGFloat = 40
+        
+        indikatorBg.position = CGPoint(x: posisiX, y: posisiY)
+        zonaIcon.size = CGSize(width: 160, height: 160)
+        zonaIcon.position = CGPoint(x: posisiX + 10, y: posisiY + (indikatorBg.size.height / 2) + 40)
+        
+        [indikatorBg, indikatorPointer, zonaIcon, lockZoneOverlay, lockZoneLabel].forEach { $0?.isHidden = true }
+    }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("Hold!")
         guard let entity = hookEntity,
-            let input = hookEntity?.component(ofType: InputComponent.self),
-            let stateComp = entity.component(ofType: StateComponent.self) else {
+              let input = hookEntity?.component(ofType: InputComponent.self),
+              let stateComp = entity.component(ofType: StateComponent.self) else {
             print("❌ Error: InputComponent / StateComponent tidak ditemukan di Entity!")
             return
         }
@@ -202,7 +209,7 @@ class GameScene: SKScene {
         print("isHolding sekarang: \(input.isHolding)")
         
         let currentState = stateComp.stateMachine.currentState
-                
+        
         if currentState is IdleState {
             print("casting")
             playSplashSound()
@@ -221,9 +228,9 @@ class GameScene: SKScene {
             guard let wheel = wheelEntity,
                   let logic = wheel.component(ofType: ReelingSystem.self),
                   let variables = wheel.component(ofType: ReelingComponent.self) else {
-                    print("⏳ Waiting for wheelEntity to be created...")
-                    return
-                }
+                print("⏳ Waiting for wheelEntity to be created...")
+                return
+            }
             
             if variables.catchProgress >= 1.0 {
                 print("Fish already caught! Resetting...")
@@ -258,10 +265,11 @@ class GameScene: SKScene {
         let dt = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
         elapsedTime += dt
-
+        
         guard let entity = hookEntity,
               let stateComp = entity.component(ofType: StateComponent.self) else { return }
         
+        syncBoatLevelVisuals(stateComp: stateComp)
         let currentState = stateComp.stateMachine.currentState
         
         if currentState is ReelingState && wheelEntity == nil {
@@ -297,23 +305,30 @@ class GameScene: SKScene {
         }
         
         if currentState is CancelState {
-            playCancelFishSound()
+            if didPlayCancelFishSound == false {
+                playCancelFishSound()
+                didPlayCancelFishSound = true
+            }
+            
             hookNode.position.y += 15.0
             if hookNode.position.y >= seaTop {
                 stateComp.stateMachine.enter(IdleState.self)
             }
+        } else {
+            didPlayCancelFishSound = false
         }
         
         if !(currentState is IdleState) && hookNode.position.y >= seaTop {
-                    mainCamera.childNode(withName: "Wheel")?.removeFromParent()
-                    catchTargetSystem.resetCatchSession()
-                    stateComp.stateMachine.enter(IdleState.self)
+            mainCamera.childNode(withName: "Wheel")?.removeFromParent()
+            catchTargetSystem.resetCatchSession()
+            stateComp.stateMachine.enter(IdleState.self)
         }
-
+        
         stateSystem.update(deltaTime: dt)
         cameraSystem.update(deltaTime: dt)
-
+        
         updateLineVisual()
+        
         reelingSystem.update(deltaTime: dt)
         reelingVisualSystem.update(deltaTime: dt)
         movementSystem.update(deltaTime: dt)
@@ -321,17 +336,38 @@ class GameScene: SKScene {
         fishMovementSystem.update(deltaTime: dt)
         hookSystem.update()
         updateCatchTarget(currentTime: currentTime)
-
+        
         removeInvalidFishEntities()
         keepFishCountBalancedAcrossLayers()
-
+        
         entity.component(ofType: InputComponent.self)?.isTapped = false
         
         updateMekanikIndikator()
         
         if let indicator = entity.component(ofType: ProgressionIndicatorComponent.self) {
-                    indicator.updateProgress(currentState: currentState, hookPositionY: hookNode.position.y)
+            indicator.updateProgress(currentState: currentState, hookPositionY: hookNode.position.y)
         }
+    }
+    
+    private func syncBoatLevelVisuals(stateComp: StateComponent? = nil) {
+        guard characterNode != nil else { return }
+
+        let level = min(max(gameVM?.currentBoatLevel ?? 1, 1), 3)
+
+        switch level {
+        case 1:
+            stateComp?.boatTier = .boatLevel1
+        case 2:
+            stateComp?.boatTier = .boatLevel2
+        default:
+            stateComp?.boatTier = .boatLevel3
+        }
+
+        guard displayedBoatLevel != level else { return }
+
+        characterNode.texture = SKTexture(imageNamed: "Level \(level)_Fish")
+        characterNode.texture?.filteringMode = .nearest
+        displayedBoatLevel = level
     }
     
     private func finishCaughtFish(stateComp: StateComponent) {
@@ -350,30 +386,40 @@ class GameScene: SKScene {
             rodaPancing.removeFromParent()
         }
         
+        
+        
         if let wheel = wheelEntity,
            let index = entities.firstIndex(of: wheel) {
             entities.remove(at: index)
         }
         
         DispatchQueue.main.async { [weak self] in
-                guard let self = self, let caughtFish = self.activeFish else { return }
-                
-                if let fishData = caughtFish.component(ofType: FishMovementComponent.self) {
-                    
-                    let newFish = FishModel(
-                        imageName: fishData.textureName,
-                        weightKg: fishData.weight
-                    )
-                    
-                    self.gameVM?.caughtFish = newFish
-                }
-                activeFish = nil
+            guard let self = self, let caughtFish = self.activeFish else { return }
+            guard let entity = hookEntity,
+                  let stateComp = entity.component(ofType: StateComponent.self) else { return }
             
-                self.gameVM?.isGameTime = false
+            if let fishData = caughtFish.component(ofType: FishMovementComponent.self) {
+                
+                let newFish = FishModel(
+                    imageName: fishData.textureName,
+                    weightKg: fishData.weight
+                )
+                
+                self.modelContext?.insert(newFish)
+                try? self.modelContext?.save()
+                self.gameVM?.caughtFish = newFish
+                
+                playFishCaughtSound()
             }
+            activeFish = nil
+            
+            self.gameVM?.isGameTime = false
+            self.syncBoatLevelVisuals(stateComp: stateComp)
+            
+        }
         
         
-    
+        
         
         wheelEntity = nil
         mainCamera.removeAllChildren()
@@ -426,11 +472,11 @@ class GameScene: SKScene {
         
         let distance = abs(start.y - end.y)
         let textureHeight = lineNode.texture?.size().height ?? 1.0
-            
+        
         lineNode.yScale = max(0.01, distance / textureHeight)
         lineNode.zRotation = 0
     }
-
+    
     @objc func randomAddClouds () {
         let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
         for _ in 1...randomNumber {
@@ -476,12 +522,12 @@ class GameScene: SKScene {
         actionArray.append(SKAction.removeFromParent())
         cloud.run(SKAction.sequence(actionArray))
     }
-
+    
     func setupReeling() {
         let wheelNode = SKSpriteNode()
         wheelNode.name = "Wheel"
         wheelNode.position = CGPoint(x: 0, y: 0)
-
+        
         wheelNode.zPosition = 1000
         
         mainCamera.addChild(wheelNode)
@@ -490,7 +536,7 @@ class GameScene: SKScene {
         
         reelingSystem.addComponent(foundIn: self.wheelEntity)
         reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
-
+        
         if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
             visualComponent.rootNode.removeFromParent()
             visualComponent.rootNode.position = CGPoint(x: 0.0, y: 0.0)
@@ -520,7 +566,7 @@ class GameScene: SKScene {
             fishEntities: &fishEntities,
             layer: layer
         )
-
+        
         if let movementComponent = fishEntities.last?.component(
             ofType: FishMovementSystem.self
         ) {
@@ -578,18 +624,18 @@ class GameScene: SKScene {
     
     private func moveCamera(by deltaY: CGFloat) {
         guard let camera else { return }
-
+        
         let halfHeight = size.height / 2
         let minY = seaBottom + halfHeight
         let maxY = seaTop - halfHeight
-
+        
         let newY = camera.position.y + deltaY
         camera.position.y = min(max(newY, minY), maxY)
     }
     
     private func updateCatchTarget(currentTime: TimeInterval) {
         guard let entity = hookEntity,
-            let stateComp = entity.component(ofType: StateComponent.self)
+              let stateComp = entity.component(ofType: StateComponent.self)
         else {
             print("❌ Error: InputComponent tidak ditemukan di Entity!")
             return
@@ -611,33 +657,34 @@ class GameScene: SKScene {
         }
         
         if catchTargetSystem.tryCatchFish(
-                from: fishEntities,
-                hookPosition: hookNode.position,
-                hookLayer: layer(for: hookNode.position.y),
-                currentTime: currentTime,
-                onHooked: { [weak self] caughtFish in
-                    guard let self,
-                          stateComp.stateMachine.currentState is WaitingState else {
-                        return
-                    }
-                    activeFish = caughtFish
-//                    gameVM.caughtFish = caughtFish.component(ofType: FishMovementComponent.self)
-                    stateComp.stateMachine.enter(ReelingState.self)
-                    hookSystem.attachCaughtFish(
-                        caughtFish,
-                        in: self
-                    )
-                },
-                onFailed: { _ in
-                    stateComp.stateMachine.enter(WaitingState.self)
+            from: fishEntities,
+            hookPosition: hookNode.position,
+            hookLayer: layer(for: hookNode.position.y),
+            currentTime: currentTime,
+            onHooked: { [weak self] caughtFish in
+                guard let self,
+                      stateComp.stateMachine.currentState is WaitingState else {
+                    return
                 }
-            ) != nil { }
+                activeFish = caughtFish
+                playCancelFishSound()
+                //                    gameVM.caughtFish = caughtFish.component(ofType: FishMovementComponent.self)
+                stateComp.stateMachine.enter(ReelingState.self)
+                hookSystem.attachCaughtFish(
+                    caughtFish,
+                    in: self
+                )
+            },
+            onFailed: { _ in
+                stateComp.stateMachine.enter(WaitingState.self)
+            }
+        ) != nil { }
     }
     
-    ///Audio System
+    //MARK: Audio System
     private func playBackgroundMusic() {
         guard backgroundMusic == nil else { return }
-
+        
         let songs = [
             "Harbor Morning Drift.mp3",
             "Morning at the Lake.mp3",
@@ -646,13 +693,13 @@ class GameScene: SKScene {
             "Willow Dock Drift.mp3"
         ]
         guard let song = songs.randomElement() else { return }
-
+        
         let music = SKAudioNode(fileNamed: song)
         music.autoplayLooped = true
         music.isPositional = false
         music.run(SKAction.changeVolume(to: 0, duration: 0))
         addChild(music)
-
+        
         music.run(SKAction.changeVolume(to: 1, duration: 1.5))
         backgroundMusic = music
     }
@@ -688,8 +735,26 @@ class GameScene: SKScene {
         )
     }
     
+    private func playFishCaughtSound(duration: TimeInterval = 1.5){
+        let audioPath = "Win Sound.mp3"
+        let fishCaughtSoundEffect = SKAudioNode(fileNamed: audioPath)
+        fishCaughtSoundEffect.autoplayLooped = false
+        fishCaughtSoundEffect.run(SKAction.changeVolume(to: 1, duration: 0))
+        addChild(fishCaughtSoundEffect)
+        
+        fishCaughtSoundEffect.run(
+            SKAction.sequence([
+                SKAction.play(),
+                SKAction.wait(forDuration: duration),
+                SKAction.removeFromParent()
+            ])
+        )
+    }
+    
     private func playCancelFishSound(duration: TimeInterval = 1){
         guard cancelFishSound == nil else { return }
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        
         let audioPath = "Fishing Game Action.wav"
         let cancelFishSoundEffect = SKAudioNode(fileNamed: audioPath)
         cancelFishSoundEffect.autoplayLooped = false
