@@ -19,6 +19,7 @@ class GameScene: SKScene {
     private var backgroundMusic: SKAudioNode?
     private var splashSound: SKAudioNode?
     private var reelingSound: SKAudioNode?
+    private var cancelFishSound: SKAudioNode?
     private let mainCamera = SKCameraNode()
     var fishEntities: [FishEntity] = []
     
@@ -212,6 +213,7 @@ class GameScene: SKScene {
         if currentState is WaitingState {
             if input.isTapped {
                 stateComp.stateMachine.enter(CancelState.self)
+                
             }
         }
         
@@ -268,6 +270,7 @@ class GameScene: SKScene {
         }
         
         if currentState is IdleState {
+            self.gameVM?.isGameTime = false
             wheelEntity = nil
             hookNode.position = CGPoint(x: rodTipPosition.x - 5 , y: rodTipPosition.y - 20)
         } else {
@@ -294,6 +297,7 @@ class GameScene: SKScene {
         }
         
         if currentState is CancelState {
+            playCancelFishSound()
             hookNode.position.y += 15.0
             if hookNode.position.y >= seaTop {
                 stateComp.stateMachine.enter(IdleState.self)
@@ -680,6 +684,28 @@ class GameScene: SKScene {
                 SKAction.play(),
                 SKAction.wait(forDuration: duration),
                 SKAction.removeFromParent()
+            ])
+        )
+    }
+    
+    private func playCancelFishSound(duration: TimeInterval = 1){
+        guard cancelFishSound == nil else { return }
+        let audioPath = "Fishing Game Action.wav"
+        let cancelFishSoundEffect = SKAudioNode(fileNamed: audioPath)
+        cancelFishSoundEffect.autoplayLooped = false
+        cancelFishSoundEffect.isPositional = false
+        cancelFishSoundEffect.run(SKAction.changeVolume(to: 1, duration: 0))
+        addChild(cancelFishSoundEffect)
+        cancelFishSound = cancelFishSoundEffect
+        
+        cancelFishSoundEffect.run(
+            SKAction.sequence([
+                SKAction.play(),
+                SKAction.wait(forDuration: duration),
+                SKAction.removeFromParent(),
+                SKAction.run { [weak self] in
+                    self?.cancelFishSound = nil
+                }
             ])
         )
     }

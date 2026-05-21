@@ -53,7 +53,7 @@ class FishModel{
                 self.imageName = "HatchetFishColor"
                 self.imageHeight = 150
 
-            case "OarFish":
+            case "Oar Fish":
                 self.name = "Oar Fish"
                 self.imageName = "OarFishColor"
                 self.imageHeight = 110

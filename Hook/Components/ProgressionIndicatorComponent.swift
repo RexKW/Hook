@@ -90,7 +90,7 @@ class ProgressionIndicatorComponent: GKComponent {
             lockZoneLabel.text = "Unlock in boat level 2"
             
             lockZoneOverlay.position = CGPoint(x: 0, y: posisiYRelatif - (tinggiOverlay / 2))
-            lockZoneLabel.position = CGPoint(x: 0, y: posisiYRelatif - 150)
+            lockZoneLabel.position = CGPoint(x: 0, y: posisiYRelatif - 250)
             
         } else if tierSkarang == .boatLevel2 {
             // JIKA KAPAL SUDAH LEVEL 2

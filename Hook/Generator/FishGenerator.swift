@@ -62,7 +62,7 @@ class FishGenerator {
             fishOptions = [
                 FishSpawnData(textureName: "Ruby snapper", weightRange: 15...200),
                 FishSpawnData(textureName: "Hatchet Fish", weightRange: 5...60),
-                FishSpawnData(textureName: "OarFish", weightRange: 10...400),
+                FishSpawnData(textureName: "Oar Fish", weightRange: 10...400),
                 FishSpawnData(textureName: "Bluenose warehou Fish", weightRange: 30...300)
             ]
 
