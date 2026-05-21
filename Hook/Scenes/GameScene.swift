@@ -60,6 +60,8 @@ class GameScene: SKScene {
     
     var initialClouds: Bool = true
     private var elapsedTime = 0.0
+    private var waitingStartedAt: TimeInterval?
+    private let catchStartDelay: TimeInterval = 0.35
     
     private let seaTop: CGFloat = -847
     private var layerHeight: CGFloat {
@@ -166,7 +168,6 @@ class GameScene: SKScene {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("Hold!")
-        
         guard let entity = hookEntity,
             let input = hookEntity?.component(ofType: InputComponent.self),
             let stateComp = entity.component(ofType: StateComponent.self) else {
@@ -181,6 +182,7 @@ class GameScene: SKScene {
                 
         if currentState is IdleState {
             print("casting")
+            playSplashSound()
             stateComp.stateMachine.enter(CastingState.self)
         }
         
@@ -208,6 +210,7 @@ class GameScene: SKScene {
             
             if success {
                 print("Hit! Progress: \(variables.catchProgress)")
+                playReelingSound()
                 logic.randomizeTarget()
                 variables.rotationSpeed += 0.2
                 elapsedTime = 0
@@ -541,8 +544,22 @@ class GameScene: SKScene {
             return
         }
         
-        if stateComp.stateMachine.currentState is WaitingState {
-            if catchTargetSystem.tryCatchFish(
+        guard stateComp.stateMachine.currentState is WaitingState else {
+            waitingStartedAt = nil
+            return
+        }
+        
+        if waitingStartedAt == nil {
+            waitingStartedAt = currentTime
+            return
+        }
+        
+        guard let waitingStartedAt,
+              currentTime - waitingStartedAt >= catchStartDelay else {
+            return
+        }
+        
+        if catchTargetSystem.tryCatchFish(
                 from: fishEntities,
                 hookPosition: hookNode.position,
                 hookLayer: layer(for: hookNode.position.y),
@@ -563,7 +580,6 @@ class GameScene: SKScene {
                     stateComp.stateMachine.enter(WaitingState.self)
                 }
             ) != nil { }
-        }
     }
     
     ///Audio System
@@ -620,7 +636,7 @@ class GameScene: SKScene {
         )
     }
     
-    private func playReelingSound(duration: TimeInterval = 1.5) {
+    private func playReelingSound(duration: TimeInterval = 0.5) {
         guard reelingSound == nil else { return }
         
         let audioPath = "Fishing Reeling Reel.wav"

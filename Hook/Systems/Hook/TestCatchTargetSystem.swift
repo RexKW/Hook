@@ -12,6 +12,7 @@ class TestCatchTargetSystem {
     private let guaranteedCatchDelay: TimeInterval = 14.5
     private let approachDuration: TimeInterval = 1.1
     private let hesitateDuration: TimeInterval = 1.0
+    private let maxCatchDistanceSquared: CGFloat = 300 * 300
     private var sessionStartTime: TimeInterval?
     private var activeFish: FishEntity?
     private(set) var caughtFish: FishEntity?
@@ -120,7 +121,10 @@ class TestCatchTargetSystem {
                     return false
                 }
                 
-                return true
+                return distanceSquared(
+                    from: fish,
+                    to: hookPosition
+                ) <= maxCatchDistanceSquared
             }
             .min { firstFish, secondFish in
                 distanceSquared(
