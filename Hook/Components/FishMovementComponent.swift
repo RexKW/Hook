@@ -8,6 +8,7 @@
 import GameplayKit
 
 public class FishMovementComponent: GKComponent {
+    var textureName: String = ""
     var velocity: CGVector = .zero // CGVector is used to tell how fast and what direction it's going
     var direction: CGVector = CGVector(dx: 1, dy: 1) // Define fish's current horizontal & vertical movement direction
     var weight: CGFloat = 1 // Heavier fish move slower

@@ -9,32 +9,23 @@ import SwiftUI
 import SpriteKit
 
 struct ContentView: View {
-    @State var isGameTime: Bool = false
+    @EnvironmentObject var viewModel: GameViewModel
     @State private var isUpgradeMenuPresented: Bool = false
-    @State private var currentBoatLevel: Int = 1
-    @State private var playerProgress: CGFloat = 0.0
-    @State private var caughtFish: Fish? = nil
-    
-    var scene: SKScene {
-        guard let scene = GameScene(fileNamed: "GameScene") else {
-                    return SKScene()
-                }
-        scene.scaleMode = .aspectFill
-        
-        return scene ?? SKScene()
-    }
+    @State private var gameScene: GameScene?
     
     
     var body: some View {
         ZStack {
             
-            SpriteView(scene: scene)
-                .edgesIgnoringSafeArea(.all)
-                .navigationBarBackButtonHidden(true)
+            if let scene = gameScene {
+                SpriteView(scene: scene)
+                    .edgesIgnoringSafeArea(.all)
+                    .navigationBarBackButtonHidden(true)
+            }
             
             VStack(alignment: .center){
-                if(!isGameTime){
-                    TopBarView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $currentBoatLevel, playerProgress: $playerProgress)
+                if(!viewModel.isGameTime){
+                    TopBarView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $viewModel.currentBoatLevel, playerProgress: $viewModel.playerProgress)
                     Spacer()
                 }
             }.padding()
@@ -45,9 +36,27 @@ struct ContentView: View {
                         withAnimation { isUpgradeMenuPresented = false }
                     }
                 
-                UpgradePopUpView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $currentBoatLevel)
+                UpgradePopUpView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $viewModel.currentBoatLevel)
             }
             
+            
+            if let fish = viewModel.caughtFish {
+                RewardPopUpView(fish: fish) {
+                    // This clears the fish data, which hides the popup
+                    viewModel.caughtFish = nil
+                }
+                .zIndex(1) // Ensures the popup is always on top
+            }
+            
+            
+            
+        }
+        .onAppear {
+            if let scene = GameScene(fileNamed: "GameScene") {
+                scene.scaleMode = .aspectFill
+                scene.gameVM = viewModel // Inject the ViewModel here
+                self.gameScene = scene   // Save it to state
+            }
         }
         
     }
@@ -55,4 +64,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(GameViewModel())
 }

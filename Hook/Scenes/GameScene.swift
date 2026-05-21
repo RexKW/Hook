@@ -10,7 +10,7 @@ import GameplayKit
 import SwiftUI
 
 class GameScene: SKScene {
-    @EnvironmentObject var gameVM: GameViewModel
+    weak var gameVM: GameViewModel?
     
     /// Entities
     private var entities = [GKEntity]()
@@ -68,6 +68,8 @@ class GameScene: SKScene {
     private var seaBottom: CGFloat {
         seaTop - layerHeight * CGFloat(seaLayers.count)
     }
+    
+    private var activeFish: FishEntity? = nil
     
     private let seaLayers: [FishGenerator.SeaLayer] = [
         .epipelagic,
@@ -182,6 +184,7 @@ class GameScene: SKScene {
         if currentState is IdleState {
             print("casting")
             stateComp.stateMachine.enter(CastingState.self)
+            self.gameVM?.isGameTime = true
         }
         
         if currentState is WaitingState {
@@ -238,6 +241,7 @@ class GameScene: SKScene {
         
         if currentState is ReelingState && wheelEntity == nil {
             setupReeling()
+            
         }
         
         if currentState is IdleState {
@@ -320,6 +324,26 @@ class GameScene: SKScene {
            let index = entities.firstIndex(of: wheel) {
             entities.remove(at: index)
         }
+        
+        DispatchQueue.main.async { [weak self] in
+                guard let self = self, let caughtFish = self.activeFish else { return }
+                
+                if let fishData = caughtFish.component(ofType: FishMovementComponent.self) {
+                    
+                    let newFish = FishModel(
+                        imageName: fishData.textureName,
+                        weightKg: fishData.weight
+                    )
+                    
+                    self.gameVM?.caughtFish = newFish
+                }
+                activeFish = nil
+            
+                self.gameVM?.isGameTime = false
+            }
+        
+        
+    
         
         wheelEntity = nil
         mainCamera.removeAllChildren()
@@ -552,7 +576,8 @@ class GameScene: SKScene {
                           stateComp.stateMachine.currentState is WaitingState else {
                         return
                     }
-                    
+                    activeFish = caughtFish
+//                    gameVM.caughtFish = caughtFish.component(ofType: FishMovementComponent.self)
                     stateComp.stateMachine.enter(ReelingState.self)
                     hookSystem.attachCaughtFish(
                         caughtFish,
