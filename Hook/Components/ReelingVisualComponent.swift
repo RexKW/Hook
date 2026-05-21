@@ -77,7 +77,7 @@ class ReelingVisualComponent: GKComponent {
                 
                 let node = SKShapeNode(path: path)
                 node.strokeColor = .green
-                node.lineWidth = 8
+                node.lineWidth = 20
                 
                 rootNode.addChild(node)
                 targetZoneNode = node

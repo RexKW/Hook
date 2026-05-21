@@ -48,8 +48,9 @@ class FishGenerator {
 
             fishOptions = [
                 FishSpawnData(textureName: "Tuna fish", weightRange: 1...35),
-                FishSpawnData(textureName: "Mackerel", weightRange: 2...50),
-                FishSpawnData(textureName: "Lion Fish", weightRange: 0.2...1.2)
+                FishSpawnData(textureName: "Mackerel", weightRange: 0.5...20),
+                FishSpawnData(textureName: "Lion Fish", weightRange: 0.2...1.2),
+                FishSpawnData(textureName: "Marlin", weightRange: 2...50)
             ]
 
             yRange = epipelagicBottom...seaTop
@@ -143,6 +144,7 @@ class FishGenerator {
             let weight = CGFloat.random(in: selectedFish.weightRange)
             let moveSpeed = speed(forWeight: weight, in: selectedFish.weightRange)
             
+            moveData.textureName = selectedFish.textureName
             moveData.weight = weight
             moveData.baseMoveSpeed = moveSpeed
             moveData.moveSpeed = moveSpeed
