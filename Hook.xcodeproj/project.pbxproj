@@ -15,6 +15,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				UI/View/FishCollectionView.swift,
+				UI/View/FishDetailView.swift,
 			);
 			target = CCA13F022FB191A7003B9756 /* Hook */;
 		};
