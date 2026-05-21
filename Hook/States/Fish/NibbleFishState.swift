@@ -124,7 +124,7 @@ class NibbleFishState: GKState {
             return
         }
         
-        movement.moveSpeed = 180 / max(movement.weight, 1)
+        movement.moveSpeed = movement.baseMoveSpeed
         movement.direction = CGVector(
             dx: Bool.random() ? 1 : -1,
             dy: CGFloat.random(in: movement.verticalDriftRange)
@@ -144,9 +144,9 @@ class NibbleFishState: GKState {
         toward targetX: CGFloat
     ) {
         if targetX > node.position.x {
-            node.xScale = abs(node.xScale)
-        } else if targetX < node.position.x {
             node.xScale = -abs(node.xScale)
+        } else if targetX < node.position.x {
+            node.xScale = abs(node.xScale)
         }
     }
 }
