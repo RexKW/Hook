@@ -25,6 +25,7 @@ class GameScene: SKScene {
     private var reelingSound: SKAudioNode?
     private var winAudioPlayer: SKAudioNode?
     private var cancelFishSound: SKAudioNode?
+    private var oceanAmbience: SKAudioNode?
     private let mainCamera = SKCameraNode()
     var fishEntities: [FishEntity] = []
     
@@ -92,6 +93,7 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         playBackgroundMusic()
+        playOceanAmbience()
         spawnFishInAllLayers()
         
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
@@ -796,5 +798,16 @@ class GameScene: SKScene {
                 }
             ])
         )
+    }
+    
+    private func playOceanAmbience(){
+        guard oceanAmbience == nil else { return }
+        let audioPath = "sea waves.mp3"
+        
+        let oceanAmbienceEffect = SKAudioNode(fileNamed: audioPath)
+        oceanAmbienceEffect.autoplayLooped = true
+        oceanAmbienceEffect.isPositional = false
+        oceanAmbienceEffect.run(SKAction.changeVolume(to: 0.6, duration: 0))
+        addChild(oceanAmbienceEffect)
     }
 }

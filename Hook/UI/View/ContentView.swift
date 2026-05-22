@@ -25,6 +25,7 @@ struct ContentView: View {
                     SpriteView(scene: scene)
                         .edgesIgnoringSafeArea(.all)
                         .navigationBarBackButtonHidden(true)
+                        .accessibilityIdentifier("gameScene")
                 }
                 
                 VStack(alignment: .center){

@@ -83,3 +83,27 @@ struct RewardPopUpView: View {
 }
 
 
+//#Preview {
+//    let fishModels = [
+//        FishModel(imageName: "Tuna Fish", weightKg: 12.5),
+//        FishModel(imageName: "Mackerel", weightKg: 8.0),
+//        FishModel(imageName: "Lion Fish", weightKg: 150.0),
+//        FishModel(imageName: "Marlin", weightKg: 95.0),
+//        FishModel(imageName: "Ruby Snapper", weightKg: 12.5),
+//        FishModel(imageName: "Hatchet Fish", weightKg: 3.2),
+//        FishModel(imageName: "Oar Fish", weightKg: 40.0),
+//        FishModel(imageName: "Bluenose warehou Fish", weightKg: 18.5),
+//        FishModel(imageName: "anglerfish-new1", weightKg: 6.8),
+//        FishModel(imageName: "Ratail fish", weightKg: 2.4),
+//        FishModel(imageName: "fangtooth1-export 1", weightKg: 5.5),
+//        FishModel(imageName: "Giant Squid", weightKg: 275.0)
+//    ]
+//
+//    ScrollView {
+//        LazyVStack {
+//            ForEach(fishModels, id: \.id) { fish in
+//                RewardPopUpView(fish: fish, onDismiss: {})
+//            }
+//        }
+//    }
+//}

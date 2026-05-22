@@ -26,7 +26,7 @@ class FishModel{
             case "Tuna fish", "Tuna Fish":
                 self.name = "Tuna Fish"
                 self.imageName = "TunaFishColor"
-                self.imageHeight = 320
+                self.imageHeight = 150
 
             case "Mackerel":
                 self.name = "Mackerel Fish"
@@ -36,12 +36,12 @@ class FishModel{
             case "Lion Fish":
                 self.name = "Lion Fish"
                 self.imageName = "LionFishColor"
-                self.imageHeight = 200
+                self.imageHeight = 120
 
             case "Marlin":
                 self.name = "Marlin Fish"
                 self.imageName = "BlueMarlinFishColor"
-                self.imageHeight = 200
+                self.imageHeight = 230
 
             case "Ruby snapper", "Ruby Snapper":
                 self.name = "Ruby Snapper"
@@ -59,7 +59,7 @@ class FishModel{
                 self.imageHeight = 110
 
             case "Bluenose warehou Fish":
-                self.name = "Bluenose Warehou"
+                self.name = "Bluenose Wareahou"
                 self.imageName = "BlueNoseWarehouColor"
                 self.imageHeight = 120
 

@@ -30,6 +30,7 @@ struct TopBarView: View {
                         .background(Color.brown.opacity(0.8))
                         .foregroundColor(.white)
                         .border(Color.black, width: 2)
+                        .accessibilityIdentifier("boatLevelText")
                     
                     // --- PROGRESS BAR ---
                     ZStack(alignment: .leading) {
@@ -45,10 +46,13 @@ struct TopBarView: View {
                             .bold()
                             .foregroundColor(.white)
                             .padding(.leading, 30)
+                            .accessibilityIdentifier("playerProgressText")
                     }
                     .border(Color.DarkBrown, width: 2)
                 }
             }
+            .accessibilityIdentifier("upgradeButton")
+            .accessibilityLabel("Upgrade")
             Spacer()
             
             // --- BOOK BUTTON ASSET ---
@@ -63,8 +67,11 @@ struct TopBarView: View {
                     .frame(width: 60, height: 60)
             }
             .padding(12)
+            .accessibilityIdentifier("fishCollectionButton")
+            .accessibilityLabel("Fish Collection")
             
         }
+        .accessibilityIdentifier("topBar")
     }
     
     
