@@ -727,7 +727,11 @@ class GameScene: SKScene {
     
     //MARK: Audio System
     private func playBackgroundMusic() {
-        guard backgroundMusic == nil else { return }
+        if backgroundMusic?.parent != nil { return }
+        
+        children
+            .filter { $0.name == "BackgroundMusic" }
+            .forEach { $0.removeFromParent() }
         
         let songs = [
             "Harbor Morning Drift.mp3",
@@ -739,6 +743,7 @@ class GameScene: SKScene {
         guard let song = songs.randomElement() else { return }
         
         let music = SKAudioNode(fileNamed: song)
+        music.name = "BackgroundMusic"
         music.autoplayLooped = true
         music.isPositional = false
         music.run(SKAction.changeVolume(to: 0, duration: 0))
