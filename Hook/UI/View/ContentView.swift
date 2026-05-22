@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var isUpgradeMenuPresented: Bool = false
     @State private var isFishCollectionPresented: Bool = false
     @State private var gameScene: GameScene?
+    @State private var isFading = false
     
     
     var body: some View {
@@ -28,12 +29,69 @@ struct ContentView: View {
                         .accessibilityIdentifier("gameScene")
                 }
                 
-                VStack(alignment: .center){
-                    if(!viewModel.isGameTime){
-                        TopBarView(isUpgradeMenuPresented: $isUpgradeMenuPresented,
-                                   isFishCollectionPresented: $isFishCollectionPresented,
-                                   currentBoatLevel: $viewModel.currentBoatLevel, playerProgress: $viewModel.playerProgress)
+                
+                if(viewModel.isReeling){
+                    VStack{
                         Spacer()
+                        Spacer()
+                        Text("Tap to Pull")
+                            .font(.custom("RawPixel-Bold", size: 24))
+                            .opacity(isFading ? 0.4 : 1.0)
+                            .onAppear {
+                                withAnimation(
+                                    .easeInOut(duration: 1.0)
+                                    .repeatForever(autoreverses: true)
+                                ) {
+                                    isFading.toggle()
+                                }
+                            }
+                        Spacer()
+                    
+                        
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(y: 75)
+                }
+                
+                
+                VStack(alignment: .center){
+                    
+                    if(!viewModel.isGameTime){
+                        ZStack{
+                            VStack(alignment: .center){
+                                TopBarView(
+                                    isUpgradeMenuPresented: $isUpgradeMenuPresented,
+                                    isFishCollectionPresented: $isFishCollectionPresented,
+                                    currentBoatLevel: $viewModel.currentBoatLevel,
+                                    playerProgress: $viewModel.playerProgress
+                                )
+                                Spacer()
+                            }
+                            
+                            VStack{
+                                Text("Hold to Lower")
+                                    .font(.custom("RawPixel-Bold", size: 32))
+                                
+                                Text("Hook")
+                                    .font(.custom("RawPixel-Bold", size: 96))
+                                    .foregroundColor(Color(red: 0.016, green: 0.345, blue: 0.631))
+                                    .opacity(isFading ? 0.4 : 1.0)
+                                    .onAppear {
+                                        withAnimation(
+                                            .easeInOut(duration: 1.0)
+                                            .repeatForever(autoreverses: true)
+                                        ) {
+                                            isFading.toggle()
+                                        }
+                                    }
+                                
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .offset(y: -75)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        
+                        
                     }
                 }.padding()
                 if isUpgradeMenuPresented {
@@ -70,8 +128,10 @@ struct ContentView: View {
                 
             }
             .onAppear {
+                isFading = true
+                
                 viewModel.configurePersistence(modelContext: modelContext)
-
+                
                 if let scene = GameScene(fileNamed: "GameScene") {
                     scene.scaleMode = .aspectFill
                     scene.gameVM = viewModel // Inject the ViewModel here

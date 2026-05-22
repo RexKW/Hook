@@ -24,13 +24,18 @@ struct TopBarView: View {
                 }
             }) {
                 HStack(spacing: 0) {
-                    Text("\(currentBoatLevel)")
-                        .font(.system(size: 24, weight: .bold))
-                        .frame(width: 50, height: 50)
-                        .background(Color.brown.opacity(0.8))
-                        .foregroundColor(.white)
-                        .border(Color.black, width: 2)
-                        .accessibilityIdentifier("boatLevelText")
+                    ZStack{
+                        Image("ButtonLevel")
+                            .resizable()
+                            .frame(width:50, height: 50)
+                        Text("\(currentBoatLevel)")
+                            .font(.custom("RawPixel-Bold", size: 28))
+                            .frame(width: 50, height: 50)
+
+                            .foregroundColor(Color(red: 0.443, green: 0.259, blue: 0.188) )
+    
+                    }
+                    
                     
                     // --- PROGRESS BAR ---
                     ZStack(alignment: .leading) {

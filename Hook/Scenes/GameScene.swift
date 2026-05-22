@@ -58,10 +58,29 @@ class GameScene: SKScene {
     let teksturBoatLvl2 = SKTexture(imageNamed: "Level 2_Idle")
     let teksturBoatLvl3 = SKTexture(imageNamed: "Level 3_Idle")
     
-    /// Variables
-    var rodTipPosition: CGPoint {
-        return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
-    }
+    /// posisi hook + line
+        var rodTipPosition: CGPoint {
+          
+            let level = min(max(gameVM?.currentBoatLevel ?? 1, 1), 3)
+            
+            switch level {
+            case 1:
+                // Koordinat untuk BoatLvl1
+                return CGPoint(x: characterNode.position.x + 271, y: characterNode.position.y - 67)
+                
+            case 2:
+                // Koordinat untuk BoatLvl2
+                return CGPoint(x: characterNode.position.x + 283, y: characterNode.position.y - 95)
+                
+            case 3:
+                // Koordinat untuk BoatLvl3
+                return CGPoint(x: characterNode.position.x + 296, y: characterNode.position.y - 125)
+                
+            default:
+                return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
+            }
+        }
+    
     var success: Bool = false
     var lastUpdateTime: TimeInterval = 0
     var possibleClouds = ["Cloud-1","Cloud-2","Cloud-3"]
@@ -95,7 +114,12 @@ class GameScene: SKScene {
         playBackgroundMusic()
         playOceanAmbience()
         spawnFishInAllLayers()
-        
+        randomAddClouds()
+        let wait = SKAction.wait(forDuration: 8.0)
+        let spawn = SKAction.run { [weak self] in
+            self?.randomAddClouds()
+        }
+        self.run(SKAction.repeatForever(SKAction.sequence([wait, spawn])))
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
         hookNode = childNode(withName: "Hook") as? SKSpriteNode
         lineNode = childNode(withName: "Line") as? SKSpriteNode
@@ -107,7 +131,7 @@ class GameScene: SKScene {
             return
         }
         
-        characterNode.zPosition = 10
+        characterNode.zPosition = 3
         lineNode.zPosition = 11
         hookNode.zPosition = 12
         
@@ -115,8 +139,8 @@ class GameScene: SKScene {
         syncBoatLevelVisuals()
         
         setupCamera()
-        setupProgressionIndicator() // Membuat bar dan tirai hitam overlay besar
-        setupHook()                 // 🌟 SEKARANG AKTIF! Mengisi hookEntity secara aman
+        setupProgressionIndicator()
+        setupHook()
         
         if let realHookEntity = self.hookEntity {
             hookSystem.attachHook(
@@ -268,6 +292,7 @@ class GameScene: SKScene {
         lastUpdateTime = currentTime
         elapsedTime += dt
         
+        
         guard let entity = hookEntity,
               let stateComp = entity.component(ofType: StateComponent.self) else { return }
         
@@ -282,7 +307,7 @@ class GameScene: SKScene {
         if currentState is IdleState {
             self.gameVM?.isGameTime = false
             wheelEntity = nil
-            hookNode.position = CGPoint(x: rodTipPosition.x - 5 , y: rodTipPosition.y - 20)
+            hookNode.position = rodTipPosition
         } else {
             if let movement = entity.component(ofType: MovementSystem.self) {
                 movement.update(deltaTime: dt, rodTip: rodTipPosition)
@@ -298,7 +323,7 @@ class GameScene: SKScene {
                 success = false
                 elapsedTime = 0
             } else {
-                hookNode.position.y += 10.0
+                hookNode.position.y += 25.0
                 if currentState is ReelingState && hookNode.position.y >= seaTop {
                     finishCaughtFish(stateComp: stateComp)
                     return
@@ -359,15 +384,21 @@ class GameScene: SKScene {
         switch level {
         case 1:
             stateComp?.boatTier = .boatLevel1
+            characterNode.texture = SKTexture(imageNamed: "BoatLvl1")
+            characterNode.size = CGSize(width: 550, height: 400)
         case 2:
             stateComp?.boatTier = .boatLevel2
+            characterNode.texture = SKTexture(imageNamed: "BoatLvl2")
+            characterNode.size = CGSize(width: 650, height: 500)
         default:
             stateComp?.boatTier = .boatLevel3
+            characterNode.texture = SKTexture(imageNamed: "BoatLvl3")
+            characterNode.size = CGSize(width: 900, height: 700)
         }
 
         guard displayedBoatLevel != level else { return }
 
-        characterNode.texture = SKTexture(imageNamed: "Level \(level)_Fish")
+        characterNode.texture = SKTexture(imageNamed: "BoatLvl\(level)")
         characterNode.texture?.filteringMode = .nearest
         displayedBoatLevel = level
     }
@@ -416,16 +447,12 @@ class GameScene: SKScene {
             activeFish = nil
             
             self.gameVM?.isGameTime = false
+            self.gameVM?.isReeling = false
             self.syncBoatLevelVisuals(stateComp: stateComp)
             
         }
         
-        
-        
-        
         wheelEntity = nil
-        mainCamera.removeAllChildren()
-        setupProgressionIndicator()
         catchTargetSystem.resetCatchSession()
         stateComp.stateMachine.enter(IdleState.self)
     }
@@ -480,7 +507,7 @@ class GameScene: SKScene {
     }
     
     @objc func randomAddClouds () {
-        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
+        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 3) + 1
         for _ in 1...randomNumber {
             addCloud(initialCloud: initialClouds)
         }
@@ -491,38 +518,52 @@ class GameScene: SKScene {
         possibleClouds = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: possibleClouds) as! [String]
         let cloud = SKSpriteNode(imageNamed: possibleClouds[0])
         cloud.zPosition = 1
-        
-        let rightEdge = (self.frame.size.width / 2) + cloud.size.width
-        let leftEdge = -(self.frame.size.width / 2) - cloud.size.width
-        
-        let randomCloudYPosition = GKRandomDistribution(lowestValue: 720, highestValue: 1920)
-        let randomCloudDirection = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+        print("Cloud added")
+
+        // Compute edges relative to scene frame and cloud width so it starts just offscreen when needed
+        let halfSceneWidth = self.frame.size.width / 2
+        let rightEdge = 790.0
+        let leftEdge = -790.0
+
+        // Random Y within a sky band
+        let randomCloudYPosition = GKRandomDistribution(lowestValue: -880, highestValue: 640)
         let positionY = CGFloat(randomCloudYPosition.nextInt())
-        
+
+        // Determine direction: true = right-to-left, false = left-to-right
+        let moveRightToLeft = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+
+        let animationDuration: TimeInterval = 20
+        var targetX: CGFloat
+
         if initialCloud {
-            let randomCloudXPosition = GKRandomDistribution(lowestValue: -320, highestValue: 320)
+            // Spawn within the visible bounds (onscreen)
+            let visibleLeft = -halfSceneWidth + cloud.size.width
+            let visibleRight = halfSceneWidth - cloud.size.width
+            let randomCloudXPosition = GKRandomDistribution(lowestValue: Int(visibleLeft), highestValue: Int(visibleRight))
             let positionX = CGFloat(randomCloudXPosition.nextInt())
             cloud.position = CGPoint(x: positionX, y: positionY)
+
+
+            // Choose a direction and set target to the offscreen opposite edge
+            if moveRightToLeft {
+                targetX = leftEdge
+            } else {
+                targetX = rightEdge
+            }
         } else {
-            if randomCloudDirection {
+            // Spawn offscreen on one side and travel across to the other
+            if moveRightToLeft {
                 cloud.position = CGPoint(x: rightEdge, y: positionY)
+                targetX = leftEdge
             } else {
                 cloud.position = CGPoint(x: leftEdge, y: positionY)
+                targetX = rightEdge
             }
         }
-        
+
         self.addChild(cloud)
-        let animationDuration: TimeInterval = 60
-        var actionArray = [SKAction]()
-        
-        if randomCloudDirection {
-            actionArray.append(SKAction.move(to: CGPoint(x: leftEdge, y: positionY), duration: animationDuration))
-        } else {
-            actionArray.append(SKAction.move(to: CGPoint(x: rightEdge, y: positionY), duration: animationDuration))
-        }
-        
-        actionArray.append(SKAction.removeFromParent())
-        cloud.run(SKAction.sequence(actionArray))
+        let moveAction = SKAction.move(to: CGPoint(x: targetX, y: positionY), duration: animationDuration)
+        cloud.run(SKAction.sequence([moveAction, SKAction.removeFromParent()]))
     }
     
     func setupReeling() {
@@ -535,13 +576,14 @@ class GameScene: SKScene {
         mainCamera.addChild(wheelNode)
         self.wheelEntity = WheelEntity(node: wheelNode)
         self.entities.append(self.wheelEntity)
+        self.gameVM?.isReeling = true
         
         reelingSystem.addComponent(foundIn: self.wheelEntity)
         reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
         
         if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
             visualComponent.rootNode.removeFromParent()
-            visualComponent.rootNode.position = CGPoint(x: 0.0, y: 0.0)
+            visualComponent.rootNode.position = CGPoint(x: 0.0, y: -420.0)
             visualComponent.rootNode.zPosition = 1
             wheelNode.addChild(visualComponent.rootNode)
         }
@@ -811,3 +853,4 @@ class GameScene: SKScene {
         addChild(oceanAmbienceEffect)
     }
 }
+

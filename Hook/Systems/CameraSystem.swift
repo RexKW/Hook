@@ -14,6 +14,6 @@ class CameraSystem: GKComponent {
               let target = data.target
         else { return }
         
-        data.cameraNode.position.y = target.position.y
+        data.cameraNode.position.y = target.position.y + 650
     }
 }
