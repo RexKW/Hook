@@ -504,7 +504,7 @@ class GameScene: SKScene {
     }
     
     @objc func randomAddClouds () {
-        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 2) + 1
+        let randomNumber = GKRandomSource.sharedRandom().nextInt(upperBound: 3) + 1
         for _ in 1...randomNumber {
             addCloud(initialCloud: initialClouds)
         }
@@ -514,16 +514,16 @@ class GameScene: SKScene {
     @objc func addCloud (initialCloud: Bool) {
         possibleClouds = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: possibleClouds) as! [String]
         let cloud = SKSpriteNode(imageNamed: possibleClouds[0])
-        cloud.zPosition = 4
+        cloud.zPosition = 1
         print("Cloud added")
 
         // Compute edges relative to scene frame and cloud width so it starts just offscreen when needed
         let halfSceneWidth = self.frame.size.width / 2
-        let rightEdge = 640.0
-        let leftEdge = -640.0
+        let rightEdge = 790.0
+        let leftEdge = -790.0
 
         // Random Y within a sky band
-        let randomCloudYPosition = GKRandomDistribution(lowestValue: 800, highestValue: 1280)
+        let randomCloudYPosition = GKRandomDistribution(lowestValue: -880, highestValue: 640)
         let positionY = CGFloat(randomCloudYPosition.nextInt())
 
         // Determine direction: true = right-to-left, false = left-to-right
