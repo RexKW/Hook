@@ -28,6 +28,31 @@ struct ContentView: View {
                         .navigationBarBackButtonHidden(true)
                 }
                 
+                
+                if(viewModel.isReeling){
+                    VStack{
+                        Spacer()
+                        Spacer()
+                        Text("Tap to Pull")
+                            .font(.custom("RawPixel-Bold", size: 24))
+                            .opacity(isFading ? 0.4 : 1.0)
+                            .onAppear {
+                                withAnimation(
+                                    .easeInOut(duration: 1.0)
+                                    .repeatForever(autoreverses: true)
+                                ) {
+                                    isFading.toggle()
+                                }
+                            }
+                        Spacer()
+                    
+                        
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(y: 75)
+                }
+                
+                
                 VStack(alignment: .center){
                     
                     if(!viewModel.isGameTime){

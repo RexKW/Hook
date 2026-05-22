@@ -445,6 +445,7 @@ class GameScene: SKScene {
             activeFish = nil
             
             self.gameVM?.isGameTime = false
+            self.gameVM?.isReeling = false
             self.syncBoatLevelVisuals(stateComp: stateComp)
             
         }
@@ -573,13 +574,14 @@ class GameScene: SKScene {
         mainCamera.addChild(wheelNode)
         self.wheelEntity = WheelEntity(node: wheelNode)
         self.entities.append(self.wheelEntity)
+        self.gameVM?.isReeling = true
         
         reelingSystem.addComponent(foundIn: self.wheelEntity)
         reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
         
         if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
             visualComponent.rootNode.removeFromParent()
-            visualComponent.rootNode.position = CGPoint(x: 0.0, y: 0.0)
+            visualComponent.rootNode.position = CGPoint(x: 0.0, y: -420.0)
             visualComponent.rootNode.zPosition = 1
             wheelNode.addChild(visualComponent.rootNode)
         }
