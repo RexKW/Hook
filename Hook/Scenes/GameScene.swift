@@ -112,7 +112,12 @@ class GameScene: SKScene {
     override func didMove(to view: SKView) {
         playBackgroundMusic()
         spawnFishInAllLayers()
-        
+        randomAddClouds()
+        let wait = SKAction.wait(forDuration: 8.0)
+        let spawn = SKAction.run { [weak self] in
+            self?.randomAddClouds()
+        }
+        self.run(SKAction.repeatForever(SKAction.sequence([wait, spawn])))
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
         hookNode = childNode(withName: "Hook") as? SKSpriteNode
         lineNode = childNode(withName: "Line") as? SKSpriteNode
@@ -124,7 +129,7 @@ class GameScene: SKScene {
             return
         }
         
-        characterNode.zPosition = 10
+        characterNode.zPosition = 3
         lineNode.zPosition = 11
         hookNode.zPosition = 12
         
@@ -285,6 +290,7 @@ class GameScene: SKScene {
         lastUpdateTime = currentTime
         elapsedTime += dt
         
+        
         guard let entity = hookEntity,
               let stateComp = entity.component(ofType: StateComponent.self) else { return }
         
@@ -315,7 +321,7 @@ class GameScene: SKScene {
                 success = false
                 elapsedTime = 0
             } else {
-                hookNode.position.y += 10.0
+                hookNode.position.y += 25.0
                 if currentState is ReelingState && hookNode.position.y >= seaTop {
                     finishCaughtFish(stateComp: stateComp)
                     return
@@ -508,39 +514,53 @@ class GameScene: SKScene {
     @objc func addCloud (initialCloud: Bool) {
         possibleClouds = GKRandomSource.sharedRandom().arrayByShufflingObjects(in: possibleClouds) as! [String]
         let cloud = SKSpriteNode(imageNamed: possibleClouds[0])
-        cloud.zPosition = 1
-        
-        let rightEdge = (self.frame.size.width / 2) + cloud.size.width
-        let leftEdge = -(self.frame.size.width / 2) - cloud.size.width
-        
-        let randomCloudYPosition = GKRandomDistribution(lowestValue: 720, highestValue: 1920)
-        let randomCloudDirection = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+        cloud.zPosition = 4
+        print("Cloud added")
+
+        // Compute edges relative to scene frame and cloud width so it starts just offscreen when needed
+        let halfSceneWidth = self.frame.size.width / 2
+        let rightEdge = 640.0
+        let leftEdge = -640.0
+
+        // Random Y within a sky band
+        let randomCloudYPosition = GKRandomDistribution(lowestValue: 800, highestValue: 1280)
         let positionY = CGFloat(randomCloudYPosition.nextInt())
-        
+
+        // Determine direction: true = right-to-left, false = left-to-right
+        let moveRightToLeft = GKRandomSource.sharedRandom().nextInt(upperBound: 2) == 0
+
+        let animationDuration: TimeInterval = 20
+        var targetX: CGFloat
+
         if initialCloud {
-            let randomCloudXPosition = GKRandomDistribution(lowestValue: -320, highestValue: 320)
+            // Spawn within the visible bounds (onscreen)
+            let visibleLeft = -halfSceneWidth + cloud.size.width
+            let visibleRight = halfSceneWidth - cloud.size.width
+            let randomCloudXPosition = GKRandomDistribution(lowestValue: Int(visibleLeft), highestValue: Int(visibleRight))
             let positionX = CGFloat(randomCloudXPosition.nextInt())
             cloud.position = CGPoint(x: positionX, y: positionY)
+
+
+            // Choose a direction and set target to the offscreen opposite edge
+            if moveRightToLeft {
+                targetX = leftEdge
+            } else {
+                targetX = rightEdge
+            }
         } else {
-            if randomCloudDirection {
+            // Spawn offscreen on one side and travel across to the other
+            if moveRightToLeft {
                 cloud.position = CGPoint(x: rightEdge, y: positionY)
+                targetX = leftEdge
             } else {
                 cloud.position = CGPoint(x: leftEdge, y: positionY)
+                targetX = rightEdge
             }
         }
-        
+
         self.addChild(cloud)
-        let animationDuration: TimeInterval = 60
-        var actionArray = [SKAction]()
-        
-        if randomCloudDirection {
-            actionArray.append(SKAction.move(to: CGPoint(x: leftEdge, y: positionY), duration: animationDuration))
-        } else {
-            actionArray.append(SKAction.move(to: CGPoint(x: rightEdge, y: positionY), duration: animationDuration))
-        }
-        
-        actionArray.append(SKAction.removeFromParent())
-        cloud.run(SKAction.sequence(actionArray))
+        let moveAction = SKAction.move(to: CGPoint(x: targetX, y: positionY), duration: animationDuration)
+        cloud.run(SKAction.sequence([moveAction, SKAction.removeFromParent()]))
     }
     
     func setupReeling() {
@@ -818,3 +838,4 @@ class GameScene: SKScene {
         )
     }
 }
+
