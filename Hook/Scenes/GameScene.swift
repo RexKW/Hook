@@ -295,6 +295,7 @@ class GameScene: SKScene {
         
         guard let entity = hookEntity,
               let stateComp = entity.component(ofType: StateComponent.self) else { return }
+        guard let moveConfig = entity.component(ofType: MovementComponent.self) else { return }
         
         syncBoatLevelVisuals(stateComp: stateComp)
         let currentState = stateComp.stateMachine.currentState
@@ -323,7 +324,7 @@ class GameScene: SKScene {
                 success = false
                 elapsedTime = 0
             } else {
-                hookNode.position.y += 25.0
+                hookNode.position.y += moveConfig.reelSpeed * CGFloat(dt)
                 if currentState is ReelingState && hookNode.position.y >= seaTop {
                     finishCaughtFish(stateComp: stateComp)
                     return
@@ -337,7 +338,7 @@ class GameScene: SKScene {
                 didPlayCancelFishSound = true
             }
             
-            hookNode.position.y += 15.0
+            hookNode.position.y += moveConfig.reelSpeed * CGFloat(dt)
             if hookNode.position.y >= seaTop {
                 stateComp.stateMachine.enter(IdleState.self)
             }
