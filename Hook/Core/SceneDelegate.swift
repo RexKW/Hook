@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
                 
                 // 1. Set up your SwiftUI view with its environment object
-                let contentView = ContentView()
+        let contentView = ContentView(onDismiss: {})
                     .environmentObject(gameViewModel)
                     .modelContainer(for: [FishModel.self, PlayerProgressModel.self])
                 

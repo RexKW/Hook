@@ -27,7 +27,7 @@ class TestCatchTargetSystem {
         hookPosition: CGPoint,
         hookLayer: FishGenerator.SeaLayer,
         currentTime: TimeInterval,
-        hookPower: CGFloat = 5,
+        hookPower: CGFloat,
         onHooked: @escaping (FishEntity) -> Void,
         onFailed: @escaping (FishEntity) -> Void
     ) -> FishEntity? {

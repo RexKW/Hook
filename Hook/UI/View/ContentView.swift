@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var isFishCollectionPresented: Bool = false
     @State private var gameScene: GameScene?
     @State private var isFading = false
-    
+    let onDismiss: () -> Void
     
     var body: some View {
         NavigationStack {
@@ -143,10 +143,20 @@ struct ContentView: View {
         
         
     }
+    
+    private func dismiss() {
+        withAnimation(.easeOut(duration: 0.20)) {
+            viewModel.isGameTime = false
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
+            onDismiss()
+        }
+    }
 }
 
 #Preview {
-    ContentView()
+    ContentView(onDismiss: {})
         .environmentObject(GameViewModel())
         .modelContainer(for: [FishModel.self, PlayerProgressModel.self], inMemory: true)
 }

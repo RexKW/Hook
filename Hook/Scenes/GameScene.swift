@@ -699,12 +699,26 @@ class GameScene: SKScene {
               currentTime - waitingStartedAt >= catchStartDelay else {
             return
         }
+        var hookPower: CGFloat
+   
+        switch gameVM?.currentBoatLevel ?? 1 {
+            case 1:
+                hookPower = 5.0
+            case 2:
+                hookPower = 15.0
+            case 3:
+                hookPower = 30.0
+            default:
+                hookPower = 5.0
+            }
+        
         
         if catchTargetSystem.tryCatchFish(
             from: fishEntities,
             hookPosition: hookNode.position,
             hookLayer: layer(for: hookNode.position.y),
             currentTime: currentTime,
+            hookPower: hookPower,
             onHooked: { [weak self] caughtFish in
                 guard let self,
                       stateComp.stateMachine.currentState is WaitingState else {
