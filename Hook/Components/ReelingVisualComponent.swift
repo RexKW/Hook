@@ -26,7 +26,7 @@ class ReelingVisualComponent: GKComponent {
         // 1. Draw the smaller wheel
         wheelNode = SKShapeNode(circleOfRadius: radius)
         wheelNode.strokeColor = .darkGray
-        wheelNode.lineWidth = 20
+        wheelNode.lineWidth = 16
         rootNode.addChild(wheelNode)
         // 2. Draw the indicator (Green Triangle, Pointing Inwards)
                 let indicatorPath = CGMutablePath()
@@ -77,7 +77,7 @@ class ReelingVisualComponent: GKComponent {
                 
                 let node = SKShapeNode(path: path)
                 node.strokeColor = .green
-                node.lineWidth = 20
+                node.lineWidth = 16
                 
                 rootNode.addChild(node)
                 targetZoneNode = node

@@ -25,6 +25,7 @@ class GameScene: SKScene {
     private var reelingSound: SKAudioNode?
     private var winAudioPlayer: SKAudioNode?
     private var cancelFishSound: SKAudioNode?
+    private var oceanAmbience: SKAudioNode?
     private let mainCamera = SKCameraNode()
     var fishEntities: [FishEntity] = []
     
@@ -69,11 +70,11 @@ class GameScene: SKScene {
                 
             case 2:
                 // Koordinat untuk BoatLvl2
-                return CGPoint(x: characterNode.position.x + 283, y: characterNode.position.y - 95)
+                return CGPoint(x: characterNode.position.x + 240, y: characterNode.position.y - 95)
                 
             case 3:
                 // Koordinat untuk BoatLvl3
-                return CGPoint(x: characterNode.position.x + 296, y: characterNode.position.y - 125)
+                return CGPoint(x: characterNode.position.x + 264, y: characterNode.position.y - 125)
                 
             default:
                 return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
@@ -111,6 +112,7 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         playBackgroundMusic()
+        playOceanAmbience()
         spawnFishInAllLayers()
         randomAddClouds()
         let wait = SKAction.wait(forDuration: 8.0)
@@ -378,6 +380,7 @@ class GameScene: SKScene {
         guard characterNode != nil else { return }
 
         let level = min(max(gameVM?.currentBoatLevel ?? 1, 1), 3)
+        
 
         switch level {
         case 1:
@@ -387,12 +390,19 @@ class GameScene: SKScene {
         case 2:
             stateComp?.boatTier = .boatLevel2
             characterNode.texture = SKTexture(imageNamed: "BoatLvl2")
-            characterNode.size = CGSize(width: 650, height: 500)
-        default:
+            characterNode.size = CGSize(width: 550, height: 500)
+            
+        case 3:
             stateComp?.boatTier = .boatLevel3
             characterNode.texture = SKTexture(imageNamed: "BoatLvl3")
-            characterNode.size = CGSize(width: 900, height: 700)
-        }
+            characterNode.size = CGSize(width: 800, height: 700)
+            characterNode.position.y = -625
+
+            
+        default:
+            stateComp?.boatTier = .boatLevel1
+            characterNode.texture = SKTexture(imageNamed: "BoatLvl1")
+            characterNode.size = CGSize(width: 550, height: 400)       }
 
         guard displayedBoatLevel != level else { return }
 
@@ -445,6 +455,7 @@ class GameScene: SKScene {
             activeFish = nil
             
             self.gameVM?.isGameTime = false
+            self.gameVM?.isReeling = false
             self.syncBoatLevelVisuals(stateComp: stateComp)
             
         }
@@ -573,13 +584,14 @@ class GameScene: SKScene {
         mainCamera.addChild(wheelNode)
         self.wheelEntity = WheelEntity(node: wheelNode)
         self.entities.append(self.wheelEntity)
+        self.gameVM?.isReeling = true
         
         reelingSystem.addComponent(foundIn: self.wheelEntity)
         reelingVisualSystem.addComponent(foundIn: self.wheelEntity)
         
         if let visualComponent = wheelEntity.component(ofType: ReelingVisualComponent.self) {
             visualComponent.rootNode.removeFromParent()
-            visualComponent.rootNode.position = CGPoint(x: 0.0, y: 0.0)
+            visualComponent.rootNode.position = CGPoint(x: 0.0, y: -420.0)
             visualComponent.rootNode.zPosition = 1
             wheelNode.addChild(visualComponent.rootNode)
         }
@@ -695,12 +707,26 @@ class GameScene: SKScene {
               currentTime - waitingStartedAt >= catchStartDelay else {
             return
         }
+        var hookPower: CGFloat
+   
+        switch gameVM?.currentBoatLevel ?? 1 {
+            case 1:
+                hookPower = 5.0
+            case 2:
+                hookPower = 15.0
+            case 3:
+                hookPower = 30.0
+            default:
+                hookPower = 5.0
+            }
+        
         
         if catchTargetSystem.tryCatchFish(
             from: fishEntities,
             hookPosition: hookNode.position,
             hookLayer: layer(for: hookNode.position.y),
             currentTime: currentTime,
+            hookPower: hookPower,
             onHooked: { [weak self] caughtFish in
                 guard let self,
                       stateComp.stateMachine.currentState is WaitingState else {
@@ -723,7 +749,11 @@ class GameScene: SKScene {
     
     //MARK: Audio System
     private func playBackgroundMusic() {
-        guard backgroundMusic == nil else { return }
+        if backgroundMusic?.parent != nil { return }
+        
+        children
+            .filter { $0.name == "BackgroundMusic" }
+            .forEach { $0.removeFromParent() }
         
         let songs = [
             "Harbor Morning Drift.mp3",
@@ -735,6 +765,7 @@ class GameScene: SKScene {
         guard let song = songs.randomElement() else { return }
         
         let music = SKAudioNode(fileNamed: song)
+        music.name = "BackgroundMusic"
         music.autoplayLooped = true
         music.isPositional = false
         music.run(SKAction.changeVolume(to: 0, duration: 0))
@@ -836,6 +867,17 @@ class GameScene: SKScene {
                 }
             ])
         )
+    }
+    
+    private func playOceanAmbience(){
+        guard oceanAmbience == nil else { return }
+        let audioPath = "sea waves.mp3"
+        
+        let oceanAmbienceEffect = SKAudioNode(fileNamed: audioPath)
+        oceanAmbienceEffect.autoplayLooped = true
+        oceanAmbienceEffect.isPositional = false
+        oceanAmbienceEffect.run(SKAction.changeVolume(to: 0.6, duration: 0))
+        addChild(oceanAmbienceEffect)
     }
 }
 

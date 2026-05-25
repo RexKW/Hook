@@ -13,6 +13,7 @@ class TestCatchTargetSystem {
     private let approachDuration: TimeInterval = 1.1
     private let hesitateDuration: TimeInterval = 1.0
     private let maxCatchDistanceSquared: CGFloat = 300 * 300
+    private let normalFishZPosition: CGFloat = 50
     private var sessionStartTime: TimeInterval?
     private var activeFish: FishEntity?
     private(set) var caughtFish: FishEntity?
@@ -26,7 +27,7 @@ class TestCatchTargetSystem {
         hookPosition: CGPoint,
         hookLayer: FishGenerator.SeaLayer,
         currentTime: TimeInterval,
-        hookPower: CGFloat = 5,
+        hookPower: CGFloat,
         onHooked: @escaping (FishEntity) -> Void,
         onFailed: @escaping (FishEntity) -> Void
     ) -> FishEntity? {
@@ -81,7 +82,7 @@ class TestCatchTargetSystem {
             node.removeAction(forKey: "nibbleFail")
             node.removeAction(forKey: "hookedFish")
             node.zRotation = 0
-            node.zPosition = 0
+            node.zPosition = normalFishZPosition
         }
         
         if let movement = fish.component(ofType: FishMovementComponent.self) {

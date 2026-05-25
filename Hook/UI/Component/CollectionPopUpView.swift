@@ -69,8 +69,11 @@ struct CollectionPopUpView: View {
                             .frame(width: 58, height: 60)
                     }
                     .offset(x: 10, y: -9)
+                    .accessibilityIdentifier("fishAlbumCloseButton")
+                    .accessibilityLabel("Close Fish Album")
                 }
                 .frame(width: containerWidth, height: containerHeight)
+                .accessibilityIdentifier("fishAlbumPopup")
                 .opacity(selectedFish == nil ? 1 : 0)   // fade album out on select
 
                 // --- DETAIL (fades in over the same space, transparent backdrop) ---
@@ -138,5 +141,4 @@ struct CollectionPopUpView: View {
         .disabled(!fish.isUnlocked)   // locked fish can't be tapped
     }
 }
-
 

@@ -19,6 +19,8 @@ class GameViewModel: NSObject, ObservableObject {
     }
     @Published var caughtFish: FishModel? = nil
     @Published var isGameTime: Bool = false
+    
+    @Published var isReeling: Bool = false
 
     private var modelContext: ModelContext?
     private var playerProgressModel: PlayerProgressModel?
