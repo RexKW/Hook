@@ -75,7 +75,7 @@ class CameraFollowHookSystem {
         let baitPosition = CGPoint(x: 0, y: -50)
         let mouthInset: CGFloat = 8
         let directionToHook: CGFloat = baitPosition.x >= fishNode.position.x ? 1 : -1
-        let baseAttachedRotation = CGFloat.pi / 2
+        let baseAttachedRotation = -(CGFloat.pi / 2)
         let wiggleAngle: CGFloat = 0.18
         
         fishNode.xScale = directionToHook > 0 ? -preservedXScale : preservedXScale
