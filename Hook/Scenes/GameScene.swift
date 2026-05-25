@@ -70,11 +70,11 @@ class GameScene: SKScene {
                 
             case 2:
                 // Koordinat untuk BoatLvl2
-                return CGPoint(x: characterNode.position.x + 283, y: characterNode.position.y - 95)
+                return CGPoint(x: characterNode.position.x + 240, y: characterNode.position.y - 95)
                 
             case 3:
                 // Koordinat untuk BoatLvl3
-                return CGPoint(x: characterNode.position.x + 296, y: characterNode.position.y - 125)
+                return CGPoint(x: characterNode.position.x + 264, y: characterNode.position.y - 125)
                 
             default:
                 return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
@@ -380,6 +380,7 @@ class GameScene: SKScene {
         guard characterNode != nil else { return }
 
         let level = min(max(gameVM?.currentBoatLevel ?? 1, 1), 3)
+        
 
         switch level {
         case 1:
@@ -389,12 +390,19 @@ class GameScene: SKScene {
         case 2:
             stateComp?.boatTier = .boatLevel2
             characterNode.texture = SKTexture(imageNamed: "BoatLvl2")
-            characterNode.size = CGSize(width: 650, height: 500)
-        default:
+            characterNode.size = CGSize(width: 550, height: 500)
+            
+        case 3:
             stateComp?.boatTier = .boatLevel3
             characterNode.texture = SKTexture(imageNamed: "BoatLvl3")
-            characterNode.size = CGSize(width: 900, height: 700)
-        }
+            characterNode.size = CGSize(width: 800, height: 700)
+            characterNode.position.y = -625
+
+            
+        default:
+            stateComp?.boatTier = .boatLevel1
+            characterNode.texture = SKTexture(imageNamed: "BoatLvl1")
+            characterNode.size = CGSize(width: 550, height: 400)       }
 
         guard displayedBoatLevel != level else { return }
 
