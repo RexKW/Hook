@@ -52,6 +52,10 @@ class GameScene: SKScene {
     private var zonaIcon: SKSpriteNode!
     private var lockZoneOverlay: SKShapeNode!
     private var lockZoneLabel: SKLabelNode!
+    private var holdInstructionLabel: SKLabelNode!
+    private var waitInstructionLabel: SKLabelNode!
+    private var isHoldInstructionVisible = false
+    private var isWaitInstructionVisible = false
     
     /// Boat Level
     let teksturBoatLvl1 = SKTexture(imageNamed: "Level 1_Idle")
@@ -70,11 +74,11 @@ class GameScene: SKScene {
                 
             case 2:
                 // Koordinat untuk BoatLvl2
-                return CGPoint(x: characterNode.position.x + 283, y: characterNode.position.y - 95)
+                return CGPoint(x: characterNode.position.x + 240, y: characterNode.position.y - 95)
                 
             case 3:
                 // Koordinat untuk BoatLvl3
-                return CGPoint(x: characterNode.position.x + 296, y: characterNode.position.y - 125)
+                return CGPoint(x: characterNode.position.x + 264, y: characterNode.position.y - 125)
                 
             default:
                 return CGPoint(x: characterNode.position.x + 230, y: characterNode.position.y - 50)
@@ -91,6 +95,7 @@ class GameScene: SKScene {
     private var didPlayCancelFishSound = false
     private var waitingStartedAt: TimeInterval?
     private let catchStartDelay: TimeInterval = 0.35
+    private let holdInstructionVisibleAlpha: CGFloat = 0.72
     
     private let seaTop: CGFloat = -847
     private var layerHeight: CGFloat {
@@ -140,6 +145,7 @@ class GameScene: SKScene {
         
         setupCamera()
         setupProgressionIndicator()
+        setupInstructionOverlays()
         setupHook()
         
         if let realHookEntity = self.hookEntity {
@@ -171,6 +177,32 @@ class GameScene: SKScene {
     private func setupCamera() {
         addChild(mainCamera)
         self.camera = mainCamera
+    }
+    
+    private var holdInstructionPosition: CGPoint {
+        CGPoint(x: 0, y: size.height * -0.4)
+    }
+    
+    private func setupInstructionOverlays() {
+        holdInstructionLabel = makeInstructionLabel(text: "Release to stop")
+        waitInstructionLabel = makeInstructionLabel(text: "Wait for fish")
+        mainCamera.addChild(holdInstructionLabel)
+        mainCamera.addChild(waitInstructionLabel)
+    }
+    
+    private func makeInstructionLabel(text: String) -> SKLabelNode {
+        let label = SKLabelNode(fontNamed: "RawPixel-Bold")
+        label.text = text
+        label.fontSize = 56
+        label.fontColor = .white
+        label.horizontalAlignmentMode = .center
+        label.verticalAlignmentMode = .center
+        label.zPosition = 2500
+        label.position = holdInstructionPosition
+        label.alpha = 0
+        label.setScale(1)
+        label.isHidden = true
+        return label
     }
     
     private func setupProgressionIndicator() {
@@ -298,6 +330,7 @@ class GameScene: SKScene {
         
         syncBoatLevelVisuals(stateComp: stateComp)
         let currentState = stateComp.stateMachine.currentState
+        updateInstructionOverlays(currentState: currentState)
         
         if currentState is ReelingState && wheelEntity == nil {
             setupReeling()
@@ -376,10 +409,90 @@ class GameScene: SKScene {
         }
     }
     
+    private func updateInstructionOverlays(currentState: GKState?) {
+        guard let input = hookEntity?.component(ofType: InputComponent.self) else {
+            return
+        }
+        
+        updateInstructionOverlay(
+            holdInstructionLabel,
+            shouldShow: currentState is CastingState && input.isHolding,
+            isVisible: &isHoldInstructionVisible
+        )
+        updateInstructionOverlay(
+            waitInstructionLabel,
+            shouldShow: currentState is WaitingState,
+            isVisible: &isWaitInstructionVisible
+        )
+    }
+    
+    private func updateInstructionOverlay(
+        _ label: SKLabelNode?,
+        shouldShow: Bool,
+        isVisible: inout Bool
+    ) {
+        guard let label, shouldShow != isVisible else { return }
+        
+        isVisible = shouldShow
+        label.removeAction(forKey: "instructionFade")
+        label.removeAction(forKey: "instructionPulse")
+        
+        if shouldShow {
+            let fadeIn = SKAction.fadeAlpha(to: holdInstructionVisibleAlpha, duration: 0.22)
+            let moveIn = SKAction.move(to: holdInstructionPosition, duration: 0.22)
+            fadeIn.timingMode = .easeOut
+            moveIn.timingMode = .easeOut
+            
+            label.alpha = 0
+            label.position = CGPoint(x: holdInstructionPosition.x, y: holdInstructionPosition.y - 12)
+            label.isHidden = false
+            label.run(
+                SKAction.sequence([
+                    SKAction.group([fadeIn, moveIn]),
+                    SKAction.run { [weak self, weak label] in
+                        guard let self, let label else { return }
+                        self.startInstructionPulse(for: label)
+                    }
+                ]),
+                withKey: "instructionFade"
+            )
+        } else {
+            let fadeOut = SKAction.fadeOut(withDuration: 0.16)
+            let moveOut = SKAction.moveBy(x: 0, y: -8, duration: 0.16)
+            fadeOut.timingMode = .easeIn
+            moveOut.timingMode = .easeIn
+            
+            label.run(
+                SKAction.sequence([
+                    SKAction.group([fadeOut, moveOut]),
+                    SKAction.hide(),
+                    SKAction.run { [weak self, weak label] in
+                        guard let self, let label else { return }
+                        label.position = self.holdInstructionPosition
+                    }
+                ]),
+                withKey: "instructionFade"
+            )
+        }
+    }
+    
+    private func startInstructionPulse(for label: SKLabelNode) {
+        let dim = SKAction.fadeAlpha(to: holdInstructionVisibleAlpha * 0.55, duration: 0.55)
+        let brighten = SKAction.fadeAlpha(to: holdInstructionVisibleAlpha, duration: 0.55)
+        dim.timingMode = .easeInEaseOut
+        brighten.timingMode = .easeInEaseOut
+        
+        label.run(
+            SKAction.repeatForever(SKAction.sequence([dim, brighten])),
+            withKey: "instructionPulse"
+        )
+    }
+    
     private func syncBoatLevelVisuals(stateComp: StateComponent? = nil) {
         guard characterNode != nil else { return }
 
         let level = min(max(gameVM?.currentBoatLevel ?? 1, 1), 3)
+        
 
         switch level {
         case 1:
@@ -389,12 +502,19 @@ class GameScene: SKScene {
         case 2:
             stateComp?.boatTier = .boatLevel2
             characterNode.texture = SKTexture(imageNamed: "BoatLvl2")
-            characterNode.size = CGSize(width: 650, height: 500)
-        default:
+            characterNode.size = CGSize(width: 550, height: 500)
+            
+        case 3:
             stateComp?.boatTier = .boatLevel3
             characterNode.texture = SKTexture(imageNamed: "BoatLvl3")
-            characterNode.size = CGSize(width: 900, height: 700)
-        }
+            characterNode.size = CGSize(width: 800, height: 700)
+            characterNode.position.y = -625
+
+            
+        default:
+            stateComp?.boatTier = .boatLevel1
+            characterNode.texture = SKTexture(imageNamed: "BoatLvl1")
+            characterNode.size = CGSize(width: 550, height: 400)       }
 
         guard displayedBoatLevel != level else { return }
 
@@ -699,12 +819,26 @@ class GameScene: SKScene {
               currentTime - waitingStartedAt >= catchStartDelay else {
             return
         }
+        var hookPower: CGFloat
+   
+        switch gameVM?.currentBoatLevel ?? 1 {
+            case 1:
+                hookPower = 5.0
+            case 2:
+                hookPower = 15.0
+            case 3:
+                hookPower = 30.0
+            default:
+                hookPower = 5.0
+            }
+        
         
         if catchTargetSystem.tryCatchFish(
             from: fishEntities,
             hookPosition: hookNode.position,
             hookLayer: layer(for: hookNode.position.y),
             currentTime: currentTime,
+            hookPower: hookPower,
             onHooked: { [weak self] caughtFish in
                 guard let self,
                       stateComp.stateMachine.currentState is WaitingState else {

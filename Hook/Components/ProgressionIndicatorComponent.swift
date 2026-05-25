@@ -82,6 +82,7 @@ class ProgressionIndicatorComponent: GKComponent {
             lockZoneOverlay.isHidden = false
             lockZoneLabel.isHidden = false
             lockZoneLabel.text = "Unlock in boat level 2"
+            lockZoneLabel.fontName = "Loficore"
             lockZoneOverlay.position = CGPoint(x: 0, y: posisiYRelatif - (tinggiOverlay / 2))
             lockZoneLabel.position = CGPoint(x: 0, y: posisiYRelatif - 250)
         } else if tierSkarang == .boatLevel2 {
@@ -89,6 +90,7 @@ class ProgressionIndicatorComponent: GKComponent {
             lockZoneOverlay.isHidden = false
             lockZoneLabel.isHidden = false
             lockZoneLabel.text = "Unlock in boat level 3"
+            lockZoneLabel.fontName = "Loficore"
             lockZoneOverlay.position = CGPoint(x: 0, y: posisiYRelatif - (tinggiOverlay / 2))
             lockZoneLabel.position = CGPoint(x: 0, y: posisiYRelatif - 150)
         } else {
