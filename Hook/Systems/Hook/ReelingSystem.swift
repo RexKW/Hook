@@ -41,12 +41,14 @@ class ReelingSystem: GKComponent {
     
     func randomizeTarget() {
         guard let reelData = entity?.component(ofType: ReelingComponent.self)
+              
         else { return }
         reelData.targetStartAngle = CGFloat.random(in: 0..<(2 * .pi))
     }
     
     func attemptReel() -> Bool {
-        guard let reelData = entity?.component(ofType: ReelingComponent.self)
+        guard let reelData = entity?.component(ofType: ReelingComponent.self),
+              let reelVisual = entity?.component(ofType: ReelingVisualComponent.self)
         else { return false }
         let targetEndAngle = reelData.targetStartAngle + reelData.targetWidth
         let success: Bool
@@ -62,6 +64,7 @@ class ReelingSystem: GKComponent {
             reelData.catchProgress = min(1.0, reelData.catchProgress + reelData.progressPerSuccess)
         } else {
             reelData.catchProgress = max(0.0, reelData.catchProgress - reelData.penaltyPerMiss)
+            reelVisual.triggerFailureEffect()
         }
         
         return success
