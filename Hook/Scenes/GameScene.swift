@@ -45,6 +45,8 @@ class GameScene: SKScene {
     private var characterNode: SKSpriteNode!
     private var hookNode: SKSpriteNode!
     private var lineNode: SKSpriteNode!
+    private var layer2: SKNode!
+    private var layer3: SKNode!
     
     /// Nodes Indikator Progression
     private var indikatorBg: SKSpriteNode!
@@ -113,6 +115,10 @@ class GameScene: SKScene {
         .bathypelagic
     ]
     
+    private var initialCameraY: CGFloat = 0.0
+    private var initialLayer2Y: CGFloat = 0.0
+    private var initialLayer3Y: CGFloat = 0.0
+    
     private let fishCountPerLayer = 20
     
     override func didMove(to view: SKView) {
@@ -128,6 +134,8 @@ class GameScene: SKScene {
         characterNode = childNode(withName: "Character2") as? SKSpriteNode
         hookNode = childNode(withName: "Hook") as? SKSpriteNode
         lineNode = childNode(withName: "Line") as? SKSpriteNode
+        layer2 = childNode(withName: "Coral Level 2")
+        layer3 = childNode(withName: "Coral Level 1")
         
         lineNode.anchorPoint = CGPoint(x: 0.5, y: 1.0)
         
@@ -135,6 +143,10 @@ class GameScene: SKScene {
             print("❌ ERROR: Salah satu Node tidak ditemukan. Cek nama di .sks!")
             return
         }
+        
+        initialCameraY = mainCamera.position.y
+            if let l2 = layer2 { initialLayer2Y = l2.position.y }
+            if let l3 = layer3 { initialLayer3Y = l3.position.y }
         
         characterNode.zPosition = 3
         lineNode.zPosition = 11
@@ -154,6 +166,23 @@ class GameScene: SKScene {
                 viewportHeight: size.height
             )
         }
+    }
+    
+    private func updateParallax() {
+        guard let layer2 = layer2, let layer3 = layer3 else { return }
+        
+        // 1. Calculate how far the camera has moved from its origin
+        let cameraDisplacementY = mainCamera.position.y - initialCameraY
+        
+        // 2. Set your depth multipliers
+        // Closer to 1.0 = Further away (moves with the camera)
+        // Closer to 0.0 = Closer to the foreground
+        let layer2Factor: CGFloat = 0.5  // Mid-background
+        let layer3Factor: CGFloat = 0.8  // Far-background
+        
+        // 3. Apply the offset to the initial positions
+        layer2.position.y = initialLayer2Y + (cameraDisplacementY * layer2Factor)
+        layer3.position.y = initialLayer3Y + (cameraDisplacementY * layer3Factor)
     }
     
     func setupHook() {
@@ -323,6 +352,7 @@ class GameScene: SKScene {
         let dt = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
         elapsedTime += dt
+        updateParallax()
         
         
         guard let entity = hookEntity,
@@ -339,6 +369,9 @@ class GameScene: SKScene {
             setupReeling()
             
         }
+        
+        
+        
         
         if currentState is IdleState {
             self.gameVM?.isGameTime = false
