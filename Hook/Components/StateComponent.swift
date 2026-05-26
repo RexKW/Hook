@@ -10,6 +10,7 @@ import GameplayKit
 class StateComponent: GKComponent {
     var stateMachine: GKStateMachine!
     var boatTier: BoatTier = .boatLevel1
+    var currentBoatLevel: Int = 1
     
     override init() {
             super.init()

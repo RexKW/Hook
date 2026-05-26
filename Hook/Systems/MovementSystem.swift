@@ -18,15 +18,16 @@ class MovementSystem: GKComponent {
                   let input = entity?.component(ofType: InputComponent.self) else { return }
             
             let limit = state.boatTier.rawValue
-
             
             let stateMachine = (entity as? HookEntity)?.stateMachine
+        
+            let calculatedDropSpeed = move.dropSpeed(for: state.currentBoatLevel)
         
         if state.stateMachine.currentState is CastingState {
             
             if input.isHolding {
                 // 1. Move the hook deeper the longer they hold
-                let speed = move.dropSpeed > 0 ? move.dropSpeed : 800.0
+                let speed = calculatedDropSpeed > 0 ? calculatedDropSpeed : 800.0
                 node.position.y -= (speed * CGFloat(deltaTime))
                 
                 // Optional: Put a hard limit so it doesn't go below the sea floor
@@ -62,7 +63,7 @@ class MovementSystem: GKComponent {
                 
                 if input.isHolding && node.position.y > limit {
                     print("casting \(node.position.y)")
-                    node.position.y -= (move.dropSpeed * CGFloat(deltaTime))
+                    node.position.y -= (calculatedDropSpeed * CGFloat(deltaTime))
                 }
                 
                 if node.position.y < limit {
