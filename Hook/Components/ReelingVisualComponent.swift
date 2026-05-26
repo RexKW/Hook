@@ -85,4 +85,31 @@ class ReelingVisualComponent: GKComponent {
     func updateTargetZoneRotation(startAngle: CGFloat) {
             targetZoneNode?.zRotation = startAngle
         }
+    
+    func triggerFailureEffect() {
+        let originalColor = wheelNode.strokeColor
+        guard let originalTargetColor = targetZoneNode?.strokeColor else { return }
+        
+        let turnRed = SKAction.run { self.wheelNode.strokeColor = UIColor(red: 0.6, green: 0.0, blue: 0.0, alpha: 1.0); self.targetZoneNode?.strokeColor = .red }
+        let waitDelay = SKAction.wait(forDuration: 0.3)
+        let revertColor = SKAction.run { self.wheelNode.strokeColor = originalColor; self.targetZoneNode?.strokeColor = originalTargetColor }
+        
+        let colorSequence = SKAction.sequence([turnRed, waitDelay, revertColor])
+        
+        
+        let moveLeft = SKAction.moveBy(x: -8, y: 0, duration: 0.05)
+        let moveRight = SKAction.moveBy(x: 16, y: 0, duration: 0.1)
+        let moveCenter = SKAction.moveBy(x: -8, y: 0, duration: 0.05)
+        
+        let singleShake = SKAction.sequence([moveLeft, moveRight, moveCenter])
+        let shakeSequence = SKAction.repeat(singleShake, count: 2)
+        
+        let failureEffect = SKAction.group([colorSequence, shakeSequence])
+        
+        
+        wheelNode.removeAction(forKey: "failureEffect")
+        targetZoneNode?.removeAction(forKey: "failureEffect")
+        wheelNode.run(failureEffect, withKey: "failureEffect")
+        targetZoneNode?.run(failureEffect, withKey: "failureEffect")
+    }
 }
