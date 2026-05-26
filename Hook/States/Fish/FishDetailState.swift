@@ -27,7 +27,7 @@ enum FishDatabase {
             silhouetteName: "TunaFish",
             name: "Tuna Fish",
             description: "Tuna are actually built different because they literally rejected being cold blooded",
-            bestWeight: "2 Kg", timesCaught: 8, isUnlocked: true,
+            bestWeight: "2 Kg", timesCaught: 8, isUnlocked: false,
             displayScale: 1
             
         ),
@@ -37,7 +37,7 @@ enum FishDatabase {
             silhouetteName: "MarlinFish",
             name: "Marlin Fish",
             description: "Marlins are basically the ocean’s tryhard gamers pulling up with the built-in RGB lighting",
-            bestWeight: "0,2 Kg", timesCaught: 1, isUnlocked: true,
+            bestWeight: "0,2 Kg", timesCaught: 1, isUnlocked: false,
             displayScale: 2
         ),
         // 3. Mackerel Fish
@@ -46,7 +46,7 @@ enum FishDatabase {
             silhouetteName: "MackerelFish",
             name: "Mackerel Fish",
             description: "The ultimate ocean tryhards with absolutely zero chill",
-            bestWeight: "4 Kg", timesCaught: 4, isUnlocked: true,
+            bestWeight: "4 Kg", timesCaught: 4, isUnlocked: false,
             displayScale: 1.2
         ),
         // 4. Lion Fish
@@ -55,7 +55,7 @@ enum FishDatabase {
             silhouetteName: "LionFish",
             name: "Lion Fish",
             description: "Lionfish is the ocean’s biggest menace and they are literally built toxic",
-            bestWeight: "0,3 Kg", timesCaught: 2, isUnlocked: true,
+            bestWeight: "0,3 Kg", timesCaught: 2, isUnlocked: false,
             displayScale: 0.8
         ),
         // 5. Ruby Snapper
@@ -64,7 +64,7 @@ enum FishDatabase {
             silhouetteName: "RubySnapper",
             name: "Ruby Snapper",
             description: "I’m not staring, my eyes are just built like this because the water pressure is too real, fr fr!",
-            bestWeight: "20 Kg", timesCaught: 12, isUnlocked: true,
+            bestWeight: "20 Kg", timesCaught: 12, isUnlocked: false,
             displayScale: 1.2
         ),
         // 6. Hatchet Fish
@@ -73,7 +73,7 @@ enum FishDatabase {
             silhouetteName: "HatchetFish",
             name: "Hatchet Fish",
             description: "Imagine flexing an actual invisibility cloak just so the ops can't catch you lacking from below… fr fr!",
-            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: true,
+            bestWeight: "0 Kg", timesCaught: 0, isUnlocked: false,
             displayScale: 1.2
         ),
         // 7. Oar Fish

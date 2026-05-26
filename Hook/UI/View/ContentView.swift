@@ -7,52 +7,156 @@
 
 import SwiftUI
 import SpriteKit
+import SwiftData
 
 struct ContentView: View {
-    @State var isGameTime: Bool = false
+    @EnvironmentObject var viewModel: GameViewModel
+    @Environment(\.modelContext) private var modelContext
     @State private var isUpgradeMenuPresented: Bool = false
-    @State private var currentBoatLevel: Int = 1
-    @State private var playerProgress: CGFloat = 0.0
-    @State private var caughtFish: Fish? = nil
-    
-    var scene: SKScene {
-        guard let scene = GameScene(fileNamed: "GameScene") else {
-                    return SKScene()
-                }
-        scene.scaleMode = .aspectFill
-        
-        return scene ?? SKScene()
-    }
-    
+    @State private var isFishCollectionPresented: Bool = false
+    @State private var gameScene: GameScene?
+    @State private var isFading = false
+    let onDismiss: () -> Void
     
     var body: some View {
-        ZStack {
-            
-            SpriteView(scene: scene)
-                .edgesIgnoringSafeArea(.all)
-                .navigationBarBackButtonHidden(true)
-            
-            VStack(alignment: .center){
-                if(!isGameTime){
-                    TopBarView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $currentBoatLevel, playerProgress: $playerProgress)
-                    Spacer()
-                }
-            }.padding()
-            if isUpgradeMenuPresented {
-                Color.black.opacity(0.6)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation { isUpgradeMenuPresented = false }
-                    }
+        NavigationStack {
+            ZStack {
                 
-                UpgradePopUpView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $currentBoatLevel)
+                if let scene = gameScene {
+                    SpriteView(scene: scene)
+                        .edgesIgnoringSafeArea(.all)
+                        .navigationBarBackButtonHidden(true)
+                        .accessibilityIdentifier("gameScene")
+                }
+                
+                
+                if(viewModel.isReeling){
+                    VStack{
+                        Spacer()
+                        Spacer()
+                        Text("Tap to Pull")
+                            .font(.custom("RawPixel-Bold", size: 24))
+                            .opacity(isFading ? 0.4 : 1.0)
+                            .onAppear {
+                                withAnimation(
+                                    .easeInOut(duration: 1.0)
+                                    .repeatForever(autoreverses: true)
+                                ) {
+                                    isFading.toggle()
+                                }
+                            }
+                        Spacer()
+                    
+                        
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(y: 75)
+                }
+                
+                
+                VStack(alignment: .center){
+                    
+                    if(!viewModel.isGameTime){
+                        ZStack{
+                            VStack(alignment: .center){
+                                TopBarView(
+                                    isUpgradeMenuPresented: $isUpgradeMenuPresented,
+                                    isFishCollectionPresented: $isFishCollectionPresented,
+                                    currentBoatLevel: $viewModel.currentBoatLevel,
+                                    playerProgress: $viewModel.playerProgress
+                                )
+                                Spacer()
+                            }
+                            
+                            VStack{
+                                Text("Hold to Lower")
+                                    .font(.custom("RawPixel-Bold", size: 32))
+                                
+                                Text("Hook")
+                                    .font(.custom("RawPixel-Bold", size: 96))
+                                    .foregroundColor(Color(red: 0.016, green: 0.345, blue: 0.631))
+                                    .opacity(isFading ? 0.4 : 1.0)
+                                    .onAppear {
+                                        withAnimation(
+                                            .easeInOut(duration: 1.0)
+                                            .repeatForever(autoreverses: true)
+                                        ) {
+                                            isFading.toggle()
+                                        }
+                                    }
+                                
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .offset(y: -75)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        
+                        
+                    }
+                }.padding()
+                if isUpgradeMenuPresented {
+                    Color.black.opacity(0.6)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation { isUpgradeMenuPresented = false }
+                        }
+                    
+                    UpgradePopUpView(isUpgradeMenuPresented: $isUpgradeMenuPresented, currentBoatLevel: $viewModel.currentBoatLevel)
+                }
+                
+                if isFishCollectionPresented{
+                    Color.black.opacity(0.6)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation { isFishCollectionPresented = false }
+                        }
+                    
+                    CollectionPopUpView(isPresent: $isFishCollectionPresented)
+                }
+                
+                
+                if let fish = viewModel.caughtFish {
+                    RewardPopUpView(fish: fish) {
+                        viewModel.gainExperience()
+                        // This clears the fish data, which hides the popup
+                        viewModel.caughtFish = nil
+                    }
+                    .zIndex(1) // Ensures the popup is always on top
+                }
+                
+                
+                
             }
-            
+            .onAppear {
+                isFading = true
+                
+                viewModel.configurePersistence(modelContext: modelContext)
+                
+                if let scene = GameScene(fileNamed: "GameScene") {
+                    scene.scaleMode = .aspectFill
+                    scene.gameVM = viewModel // Inject the ViewModel here
+                    scene.modelContext = modelContext
+                    self.gameScene = scene   // Save it to state
+                }
+            }
         }
         
+        
+    }
+    
+    private func dismiss() {
+        withAnimation(.easeOut(duration: 0.20)) {
+            viewModel.isGameTime = false
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
+            onDismiss()
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(onDismiss: {})
+        .environmentObject(GameViewModel())
+        .modelContainer(for: [FishModel.self, PlayerProgressModel.self], inMemory: true)
 }

@@ -18,7 +18,7 @@ class ReelingComponent: GKComponent {
     let progressPerSuccess: CGFloat = 0.2 // Takes 5 perfect hits to catch
     let penaltyPerMiss: CGFloat = 0.1 // Lose progress if you miss
     
-    init(targetWidthRadians: CGFloat = .pi / 4) {
+    init(targetWidthRadians: CGFloat = .pi / 2) {
         self.targetWidth = targetWidthRadians
         super.init()
     }

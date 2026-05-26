@@ -14,8 +14,9 @@ struct HookApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(onDismiss: {})
                 .environmentObject(gameViewModel)
         }
+        .modelContainer(for: [FishModel.self, PlayerProgressModel.self])
     }
 }

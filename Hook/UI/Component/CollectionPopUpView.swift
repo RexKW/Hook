@@ -1,14 +1,14 @@
 //
-//  FishCollection.swift
+//  CollectionPopUpView.swift
 //  Hook
 //
-//  Created by Rex Kenny Wirasantoso on 11/05/26.
+//  Created by Christianto Elvern Haryanto on 21/05/26.
 //
 
 import SwiftUI
 import SwiftData
 
-struct FishCollectionView: View {
+struct CollectionPopUpView: View {
     @Binding var isPresent: Bool
     @Query private var caughtFish: [FishModel]
 
@@ -24,11 +24,9 @@ struct FishCollectionView: View {
 
     // Holds the tapped fish; non-nil value shows the detail view.
     @State private var selectedFish: FishDetailState?
-
+    
     var body: some View {
-        NavigationStack {
             ZStack {
-                Color.blue.opacity(0.4).ignoresSafeArea()
 
                 // --- ALBUM (fades out when a fish is selected) ---
                 ZStack(alignment: .topTrailing) {
@@ -71,8 +69,11 @@ struct FishCollectionView: View {
                             .frame(width: 58, height: 60)
                     }
                     .offset(x: 10, y: -9)
+                    .accessibilityIdentifier("fishAlbumCloseButton")
+                    .accessibilityLabel("Close Fish Album")
                 }
                 .frame(width: containerWidth, height: containerHeight)
+                .accessibilityIdentifier("fishAlbumPopup")
                 .opacity(selectedFish == nil ? 1 : 0)   // fade album out on select
 
                 // --- DETAIL (fades in over the same space, transparent backdrop) ---
@@ -86,7 +87,7 @@ struct FishCollectionView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: selectedFish?.id)
-        }
+        
     }
 
     private var unlockedFishDatabase: [FishDetailState] {
@@ -141,6 +142,3 @@ struct FishCollectionView: View {
     }
 }
 
-#Preview {
-    FishCollectionView(isPresent: .constant(false))
-}

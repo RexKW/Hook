@@ -10,6 +10,8 @@ import SwiftUI
 struct TopBarView: View {
     @Binding var isUpgradeMenuPresented: Bool
     
+    @Binding var isFishCollectionPresented: Bool
+    
     @Binding var currentBoatLevel: Int
     
     @Binding var playerProgress: CGFloat
@@ -22,12 +24,18 @@ struct TopBarView: View {
                 }
             }) {
                 HStack(spacing: 0) {
-                    Text("\(currentBoatLevel)")
-                        .font(.system(size: 24, weight: .bold))
-                        .frame(width: 50, height: 50)
-                        .background(Color.brown.opacity(0.8))
-                        .foregroundColor(.white)
-                        .border(Color.black, width: 2)
+                    ZStack{
+                        Image("ButtonLevel")
+                            .resizable()
+                            .frame(width:50, height: 50)
+                        Text("\(currentBoatLevel)")
+                            .font(.custom("RawPixel-Bold", size: 28))
+                            .frame(width: 50, height: 50)
+
+                            .foregroundColor(Color(red: 0.443, green: 0.259, blue: 0.188) )
+    
+                    }
+                    
                     
                     // --- PROGRESS BAR ---
                     ZStack(alignment: .leading) {
@@ -43,22 +51,32 @@ struct TopBarView: View {
                             .bold()
                             .foregroundColor(.white)
                             .padding(.leading, 30)
+                            .accessibilityIdentifier("playerProgressText")
                     }
                     .border(Color.DarkBrown, width: 2)
                 }
             }
+            .accessibilityIdentifier("upgradeButton")
+            .accessibilityLabel("Upgrade")
             Spacer()
             
             // --- BOOK BUTTON ASSET ---
-            Button(action: {}) {
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    isFishCollectionPresented.toggle()
+                }
+            }) {
                 Image("ButtonBook")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 60, height: 60)
             }
             .padding(12)
+            .accessibilityIdentifier("fishCollectionButton")
+            .accessibilityLabel("Fish Collection")
             
         }
+        .accessibilityIdentifier("topBar")
     }
     
     
@@ -69,6 +87,7 @@ struct TopBarView: View {
 #Preview {
     TopBarView(
         isUpgradeMenuPresented: .constant(false),
+        isFishCollectionPresented: .constant(false),
         currentBoatLevel: .constant(1),
         playerProgress: .constant(CGFloat(0.25))
     )

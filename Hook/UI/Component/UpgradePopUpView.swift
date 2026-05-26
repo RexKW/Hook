@@ -51,7 +51,10 @@ struct UpgradePopUpView: View {
             }
             
             .offset(x: 76, y: 45)
+            .accessibilityIdentifier("upgradeCloseButton")
+            .accessibilityLabel("Close Upgrade")
         }
+        .accessibilityIdentifier("upgradePopup")
     }
     
     private func boatUpgradeRow(level: Int, colorAsset: String, silhouetteAsset: String?) -> some View {

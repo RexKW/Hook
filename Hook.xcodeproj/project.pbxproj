@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		F95A15C22FBFEF62001940F1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CCA13EFB2FB191A7003B9756 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CCA13F022FB191A7003B9756;
+			remoteInfo = Hook;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		CCA13F032FB191A7003B9756 /* Hook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hook.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F95A15BE2FBFEF62001940F1 /* HookTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -15,6 +26,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				UI/View/FishDetailView.swift,
 			);
 			target = CCA13F022FB191A7003B9756 /* Hook */;
 		};
@@ -29,10 +41,22 @@
 			path = Hook;
 			sourceTree = "<group>";
 		};
+		F95A15BF2FBFEF62001940F1 /* HookTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HookTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		CCA13F002FB191A7003B9756 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F95A15BB2FBFEF62001940F1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				CCA13F052FB191A7003B9756 /* Hook */,
+				F95A15BF2FBFEF62001940F1 /* HookTests */,
 				CCA13F042FB191A7003B9756 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				CCA13F032FB191A7003B9756 /* Hook.app */,
+				F95A15BE2FBFEF62001940F1 /* HookTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,6 +109,29 @@
 			productReference = CCA13F032FB191A7003B9756 /* Hook.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F95A15BD2FBFEF62001940F1 /* HookTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F95A15C42FBFEF62001940F1 /* Build configuration list for PBXNativeTarget "HookTests" */;
+			buildPhases = (
+				F95A15BA2FBFEF62001940F1 /* Sources */,
+				F95A15BB2FBFEF62001940F1 /* Frameworks */,
+				F95A15BC2FBFEF62001940F1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F95A15C32FBFEF62001940F1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F95A15BF2FBFEF62001940F1 /* HookTests */,
+			);
+			name = HookTests;
+			packageProductDependencies = (
+			);
+			productName = HookTests;
+			productReference = F95A15BE2FBFEF62001940F1 /* HookTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -90,11 +139,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2640;
+				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					CCA13F022FB191A7003B9756 = {
 						CreatedOnToolsVersion = 26.4.1;
+					};
+					F95A15BD2FBFEF62001940F1 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = CCA13F022FB191A7003B9756;
 					};
 				};
 			};
@@ -113,12 +166,20 @@
 			projectRoot = "";
 			targets = (
 				CCA13F022FB191A7003B9756 /* Hook */,
+				F95A15BD2FBFEF62001940F1 /* HookTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		CCA13F012FB191A7003B9756 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F95A15BC2FBFEF62001940F1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +196,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F95A15BA2FBFEF62001940F1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F95A15C32FBFEF62001940F1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CCA13F022FB191A7003B9756 /* Hook */;
+			targetProxy = F95A15C22FBFEF62001940F1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		CCA13F1A2FB191A9003B9756 /* Debug */ = {
@@ -145,7 +221,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+<<<<<<< HEAD
 				DEVELOPMENT_TEAM = JH78SQG8C5;
+=======
+				DEVELOPMENT_TEAM = B3W96FJVQ4;
+>>>>>>> test-flight-main
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Hook/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -177,7 +257,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+<<<<<<< HEAD
 				DEVELOPMENT_TEAM = JH78SQG8C5;
+=======
+				DEVELOPMENT_TEAM = B3W96FJVQ4;
+>>>>>>> test-flight-main
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Hook/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -325,6 +409,50 @@
 			};
 			name = Release;
 		};
+		F95A15C52FBFEF62001940F1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QU4D5KRV4A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.elvernh.HookTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hook.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Hook";
+			};
+			name = Debug;
+		};
+		F95A15C62FBFEF62001940F1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QU4D5KRV4A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.elvernh.HookTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hook.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Hook";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -342,6 +470,15 @@
 			buildConfigurations = (
 				CCA13F1A2FB191A9003B9756 /* Debug */,
 				CCA13F1B2FB191A9003B9756 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F95A15C42FBFEF62001940F1 /* Build configuration list for PBXNativeTarget "HookTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F95A15C52FBFEF62001940F1 /* Debug */,
+				F95A15C62FBFEF62001940F1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

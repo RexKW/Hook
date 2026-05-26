@@ -7,8 +7,8 @@
 
 import GameplayKit
 
-class FishMovementSystem: GKComponent{
-    override func update(deltaTime seconds: TimeInterval){
+class FishMovementSystem: GKComponent {
+    override func update(deltaTime seconds: TimeInterval) {
         guard let node = entity?.component(ofType: GKSKNodeComponent.self)?.node,
               let moveData = entity?.component(ofType: FishMovementComponent.self),
               let state = entity?.component(ofType: FishStateComponent.self)
@@ -52,8 +52,7 @@ class FishMovementSystem: GKComponent{
         let minX: CGFloat = -800
         let maxX: CGFloat = 800
 
-        if node.position.x < minX ||
-            node.position.x > maxX {
+        if node.position.x < minX || node.position.x > maxX {
             node.removeFromParent()
             entity?.removeComponent(ofType: FishMovementComponent.self)
         }
@@ -61,8 +60,29 @@ class FishMovementSystem: GKComponent{
         // Handle facing direction
         if moveData.direction.dx > 0 {
             node.xScale = -abs(node.xScale)
-        }else if moveData.direction.dx < 0{
+        } else if moveData.direction.dx < 0 {
             node.xScale = abs(node.xScale)
         }
+        
+        // --- 🐟 NEW TILTING LOGIC 🐟 ---
+        
+        // 1. Define the maximum tilt angle in radians (15 degrees looks natural)
+        let maxTilt: CGFloat = 15.0 * (.pi / 180.0)
+        
+        // 2. Calculate how fast it's moving vertically compared to its speed
+        // This gives us a normalized value roughly between -1.0 and 1.0
+        let verticalRatio = moveData.velocity.dy / max(moveData.moveSpeed, 1.0)
+        
+        // 3. Set the base rotation target
+        var targetRotation = verticalRatio * maxTilt
+        
+        // 4. Invert rotation if facing left, so the "nose" always points in the direction of the movement
+        if moveData.direction.dx < 0 {
+            targetRotation = -targetRotation
+        }
+        
+        // 5. Smoothly interpolate the current rotation to the target rotation
+        let tiltSmoothness: CGFloat = 3.0
+        node.zRotation += (targetRotation - node.zRotation) * CGFloat(seconds) * tiltSmoothness
     }
 }
