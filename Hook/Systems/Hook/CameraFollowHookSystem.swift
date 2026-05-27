@@ -63,7 +63,10 @@ class CameraFollowHookSystem {
         }
         let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
         let preservedXScale = abs(fishNode.xScale) / max(abs(hookNode.xScale), .leastNonzeroMagnitude)
-        let preservedYScale = fishNode.yScale / max(abs(hookNode.yScale), .leastNonzeroMagnitude)
+        let preservedYScale = abs(fishNode.yScale) / max(abs(hookNode.yScale), .leastNonzeroMagnitude)
+        
+        fish.component(ofType: FishMovementComponent.self)?.isHooked = true
+        fish.component(ofType: FishMovementComponent.self)?.moveSpeed = 0
         
         fishNode.removeAllActions()
         fishNode.removeFromParent()

@@ -42,7 +42,7 @@ class FishMovementSystem: GKComponent {
 
         if node.position.y < moveData.yRange.lowerBound {
             node.position.y = moveData.yRange.lowerBound
-            moveData.direction.dy = abs(moveData.direction.dy)
+            moveData.direction.dy = -abs(moveData.direction.dy)
         } else if node.position.y > moveData.yRange.upperBound {
             node.position.y = moveData.yRange.upperBound
             moveData.direction.dy = -abs(moveData.direction.dy)
