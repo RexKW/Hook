@@ -63,10 +63,16 @@ class CameraFollowHookSystem {
         }
         let fishScenePosition = fishNode.convert(CGPoint.zero, to: scene)
         let preservedXScale = abs(fishNode.xScale) / max(abs(hookNode.xScale), .leastNonzeroMagnitude)
-        let preservedYScale = abs(fishNode.yScale) / max(abs(hookNode.yScale), .leastNonzeroMagnitude)
+        let preservedYScale = -abs(fishNode.yScale) / max(abs(hookNode.yScale), .leastNonzeroMagnitude)
         
-        fish.component(ofType: FishMovementComponent.self)?.isHooked = true
-        fish.component(ofType: FishMovementComponent.self)?.moveSpeed = 0
+        if let movement = fish.component(ofType: FishMovementComponent.self) {
+            movement.isHooked = true
+            movement.moveSpeed = 0
+        }
+        if let fishState = fish.component(ofType: FishStateComponent.self) {
+            fishState.onHooked = nil
+            fishState.onFailed = nil
+        }
         
         fishNode.removeAllActions()
         fishNode.removeFromParent()
@@ -77,11 +83,10 @@ class CameraFollowHookSystem {
         
         let baitPosition = CGPoint(x: 0, y: -50)
         let mouthInset: CGFloat = 8
-        let directionToHook: CGFloat = baitPosition.x >= fishNode.position.x ? 1 : -1
         let baseAttachedRotation = -(CGFloat.pi / 2)
         let wiggleAngle: CGFloat = 0.18
         
-        fishNode.xScale = directionToHook > 0 ? -preservedXScale : preservedXScale
+        fishNode.xScale = preservedXScale
         fishNode.yScale = preservedYScale
         
         if let fishSprite = fishNode as? SKSpriteNode {

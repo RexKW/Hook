@@ -35,6 +35,7 @@ class HookedFishState: GKState {
         }
         
         node.removeAllActions()
+        node.yScale = abs(node.yScale)
         face(node, toward: hookPosition.x)
         
         node.run(

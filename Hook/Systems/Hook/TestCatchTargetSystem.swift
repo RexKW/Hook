@@ -82,6 +82,7 @@ class TestCatchTargetSystem {
             node.removeAction(forKey: "nibbleFail")
             node.removeAction(forKey: "hookedFish")
             node.zRotation = 0
+            node.yScale = abs(node.yScale)
             node.zPosition = normalFishZPosition
         }
         
