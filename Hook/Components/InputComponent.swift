@@ -18,5 +18,6 @@ class InputComponent: GKComponent {
     
     func handleTouchEnded() {
         isHolding = false
+        isTapped = false
     }
 }

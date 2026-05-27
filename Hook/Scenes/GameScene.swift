@@ -344,7 +344,26 @@ class GameScene: SKScene {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        hookEntity?.component(ofType: InputComponent.self)?.handleTouchEnded()
+        stopHoldingHook()
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        stopHoldingHook()
+    }
+    
+    private func stopHoldingHook() {
+        guard let entity = hookEntity,
+              let input = entity.component(ofType: InputComponent.self),
+              let stateComp = entity.component(ofType: StateComponent.self) else {
+            return
+        }
+        
+        input.handleTouchEnded()
+        
+        if stateComp.stateMachine.currentState is CastingState {
+            print("✅ Masuk ke Waiting State at depth: \(hookNode.position.y)")
+            stateComp.stateMachine.enter(WaitingState.self)
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {
